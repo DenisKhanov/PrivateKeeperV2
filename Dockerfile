@@ -14,7 +14,7 @@ COPY internal/tlsconfig/cert/server ./
 RUN go mod download
 
 # Копируем исходный код в рабочую директорию контейнера
-COPY . .
+COPY ./ ./
 
 # Копируем файл .env
 COPY server.env ./

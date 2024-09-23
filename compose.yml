@@ -7,7 +7,7 @@ services:
     container_name: private-keeper-v2-app
     restart: always
     environment:
-      - DATABASE_URI=postgres://postgres:postgres@postgres_db:5432/privatekeeperv2?sslmode=disable
+      - DATABASE_URI=postgres://postgres:postgres@keeper-postgres:5432/postgres?sslmode=disable
       - GRPC_SERVER=:3300
       - REDIS_URL=redis:6379
       - REDIS_PASSWORD=
@@ -41,7 +41,7 @@ services:
   # PostgreSQL database
   postgres_db:
     image: postgres:16-alpine3.20
-    container_name: privatekeeper-postgres
+    container_name: keeper-postgres
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
@@ -52,7 +52,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=privatekeeperv2
+      - POSTGRES_DB=privatekeeper
     ports:
       - "5436:5432"
     volumes:
