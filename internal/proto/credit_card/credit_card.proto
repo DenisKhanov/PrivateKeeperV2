@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credit_card";
+
+message PostCreditCardRequest {
+  string number = 1;
+  string owner_name = 2;
+  string expires_at = 3;
+  string cvv_code = 4;
+  string pin_code = 5;
+  string metadata = 6;
+}
+
+message PostCreditCardResponse {
+  string id = 1;
+  string owner_id = 2;
+  string number = 3;
+  string owner_name = 4;
+  string expires_at = 5;
+  string cvv_code = 6;
+  string pin_code = 7;
+  string metadata = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message GetCreditCardRequest {
+  string number = 1;
+  string owner = 2;
+  string cvv_code = 3;
+  string pin_code = 4;
+  string metadata = 5;
+  string expires_after = 6;
+  string expires_before = 7;
+}
+
+message CreditCard {
+  string id = 1;
+  string owner_id = 2;
+  string number = 3;
+  string owner_name = 4;
+  string expires_at = 5;
+  string cvv_code = 6;
+  string pin_code = 7;
+  string metadata = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message GetCreditCardResponse {
+  repeated CreditCard cards = 1;
+}
+
+service CreditCardService {
+  rpc PostSaveCreditCard(PostCreditCardRequest) returns (PostCreditCardResponse);
+  rpc GetLoadCreditCard(GetCreditCardRequest) returns (GetCreditCardResponse);
+
+}

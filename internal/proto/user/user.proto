@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/user";
+
+message PostUserRegisterRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message PostUserRegisterResponse {
+  string token = 1;
+}
+
+message PostUserLoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message PostUserLoginResponse {
+  string token = 1;
+}
+
+service UserService {
+  rpc PostRegisterUser(PostUserRegisterRequest) returns (PostUserRegisterResponse);
+  rpc PostLoginUser(PostUserLoginRequest) returns (PostUserLoginResponse);
+}

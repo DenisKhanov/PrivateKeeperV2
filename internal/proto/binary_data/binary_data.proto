@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/binary_data";
+
+message PostBinaryDataRequest {
+  bytes data = 1;
+  string name = 2;
+  string extension = 3;
+  string metadata = 4;
+}
+
+message PostBinaryDataResponse {
+  string id = 1;
+  string name = 2;
+  string extension = 3;
+  string metadata = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message GetBinaryDataRequest {
+  string name = 1;
+  string metadata = 2;
+}
+
+message BinaryData {
+  string id = 1;
+  string owner_id = 2;
+  bytes data = 3;
+  string name = 4;
+  string extension = 5;
+  string metadata = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message GetBinaryDataResponse {
+  repeated BinaryData binaries = 1;
+}
+
+service BinaryDataService {
+  rpc PostSaveBinaryData(PostBinaryDataRequest) returns (PostBinaryDataResponse);
+  rpc GetLoadBinaryData(GetBinaryDataRequest) returns (GetBinaryDataResponse);
+}

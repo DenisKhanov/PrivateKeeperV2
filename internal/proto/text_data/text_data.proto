@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/text_data";
+
+message PostTextDataRequest {
+  string text = 1;
+  string metadata = 2;
+}
+
+message PostTextDataResponse {
+  string id = 1;
+  string text = 2;
+  string metadata = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+message GetTextDataRequest {
+  string text = 1;
+  string metadata = 2;
+}
+
+message TextData {
+  string id = 1;
+  string owner_id = 2;
+  string text = 3;
+  string metadata = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message GetTextDataResponse {
+  repeated TextData text = 1;
+}
+
+service TextDataService {
+  rpc PostSaveTextData(PostTextDataRequest) returns (PostTextDataResponse);
+  rpc GetLoadTextData(GetTextDataRequest) returns (GetTextDataResponse);
+}
