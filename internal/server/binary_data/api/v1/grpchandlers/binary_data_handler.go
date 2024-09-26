@@ -58,7 +58,6 @@ func (h *BinaryDataHandler) GetLoadBinaryData(ctx context.Context, in *pb.GetBin
 			Extension: v.Extension,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: v.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 
@@ -92,6 +91,5 @@ func (h *BinaryDataHandler) PostSaveBinaryData(ctx context.Context, in *pb.PostB
 		Extension: binary.Extension,
 		Metadata:  binary.MetaData,
 		CreatedAt: binary.CreatedAt.Format(time.RFC3339Nano),
-		UpdatedAt: binary.UpdatedAt.Format(time.RFC3339Nano),
 	}, nil
 }

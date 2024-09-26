@@ -60,7 +60,6 @@ func (h *CredentialsHandler) PostSaveCredentials(ctx context.Context, in *pb.Pos
 		Password:  cred.Password,
 		Metadata:  cred.MetaData,
 		CreatedAt: cred.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: cred.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -86,7 +85,6 @@ func (h *CredentialsHandler) GetLoadCredentials(ctx context.Context, in *pb.GetC
 			Password:  v.Password,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: v.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 

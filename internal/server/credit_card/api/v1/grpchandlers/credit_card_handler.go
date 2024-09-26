@@ -68,7 +68,6 @@ func (h *CreditCardHandler) PostSaveCreditCard(ctx context.Context, in *pb.PostC
 		PinCode:   creditCard.PinCode,
 		Metadata:  creditCard.MetaData,
 		CreatedAt: creditCard.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: creditCard.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -97,7 +96,6 @@ func (h *CreditCardHandler) GetLoadCreditCard(ctx context.Context, in *pb.GetCre
 			PinCode:   v.PinCode,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: v.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 

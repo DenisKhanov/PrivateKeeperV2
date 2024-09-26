@@ -24,7 +24,7 @@ func (r *PostgresDataRepository) SelectAll(ctx context.Context, userID, dataType
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
 			select
-			    id, owner_id, type, data, metadata, created_at, updated_at 
+			    id, owner_id, type, data, metadata, created_at
 			from privatekeeper.data
 			where owner_id = $1 and type = $2;
 			`,
@@ -45,10 +45,10 @@ func (r *PostgresDataRepository) Insert(ctx context.Context, data model.Data) (m
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
 			insert into privatekeeper.data
-			    (id, owner_id, type, data, metadata, created_at, updated_at) 
+			    (id, owner_id, type, data, metadata, created_at) 
 			values
 				($1, $2, $3, $4, $5, now(), now())
-			returning id, owner_id, type, data, metadata, created_at, updated_at;
+			returning id, owner_id, type, data, metadata, created_at;
 			`,
 		data.ID,
 		data.OwnerID,

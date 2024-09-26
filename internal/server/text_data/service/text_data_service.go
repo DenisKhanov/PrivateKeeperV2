@@ -91,7 +91,6 @@ func (s *TextDataService) SaveTextData(ctx context.Context, req model.TextDataPo
 		Text:      req.Text,
 		MetaData:  savedTextData.MetaData,
 		CreatedAt: savedTextData.CreatedAt,
-		UpdatedAt: savedTextData.UpdatedAt,
 	}, nil
 }
 
@@ -130,7 +129,6 @@ func (s *TextDataService) LoadAllTextData(ctx context.Context, spec specificatio
 			Text:      data.Text,
 			MetaData:  encryptedText.MetaData,
 			CreatedAt: encryptedText.CreatedAt,
-			UpdatedAt: encryptedText.UpdatedAt,
 		})
 	}
 

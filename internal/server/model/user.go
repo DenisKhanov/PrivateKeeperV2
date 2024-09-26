@@ -18,5 +18,4 @@ type User struct {
 	Password  []byte    `db:"password"`
 	CryptKey  []byte    `db:"crypt_key"`
 	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
 }

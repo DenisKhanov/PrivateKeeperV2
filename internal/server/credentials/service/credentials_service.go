@@ -93,7 +93,6 @@ func (s *CredentialsService) SaveCredentials(ctx context.Context, req model.Cred
 		Password:  req.Password,
 		MetaData:  savedCredentials.MetaData,
 		CreatedAt: savedCredentials.CreatedAt,
-		UpdatedAt: savedCredentials.UpdatedAt,
 	}, nil
 }
 
@@ -133,7 +132,6 @@ func (s *CredentialsService) LoadAllCredentials(ctx context.Context, spec specif
 			Password:  cred.Password,
 			MetaData:  encryptedCred.MetaData,
 			CreatedAt: encryptedCred.CreatedAt,
-			UpdatedAt: encryptedCred.UpdatedAt,
 		})
 	}
 

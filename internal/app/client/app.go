@@ -129,7 +129,7 @@ func Run() {
 		case "10":
 			binaryService.Load(ctx)
 		case "11":
-			clientState.SetWorkingDirectory(ctx)
+			clientState.SetWorkingDirectory()
 		case "0":
 			fmt.Println("Application shutdown.")
 			return

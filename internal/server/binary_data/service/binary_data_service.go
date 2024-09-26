@@ -96,7 +96,6 @@ func (s *BinaryDataService) SaveBinaryData(ctx context.Context, req model.Binary
 		Data:      req.Data,
 		MetaData:  savedBinaryData.MetaData,
 		CreatedAt: savedBinaryData.CreatedAt,
-		UpdatedAt: savedBinaryData.UpdatedAt,
 	}, nil
 }
 
@@ -137,7 +136,6 @@ func (s *BinaryDataService) LoadAllBinaryData(ctx context.Context, spec specific
 			Data:      data.Data,
 			MetaData:  encryptedBinary.MetaData,
 			CreatedAt: encryptedBinary.CreatedAt,
-			UpdatedAt: encryptedBinary.UpdatedAt,
 		})
 	}
 

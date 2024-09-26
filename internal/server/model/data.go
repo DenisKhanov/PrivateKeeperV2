@@ -9,5 +9,4 @@ type Data struct {
 	Data      []byte    `db:"data"`
 	MetaData  string    `db:"meta_data"`
 	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
 }

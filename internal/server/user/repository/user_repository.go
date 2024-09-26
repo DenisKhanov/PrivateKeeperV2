@@ -24,7 +24,7 @@ func (r *PostgresUserRepository) SelectByLogin(ctx context.Context, login string
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
 			select 
-				id, login, password, crypt_key, created_at, updated_at
+				id, login, password, crypt_key, created_at
 			from privatekeeper.user
 			where login = $1;
 			`,
@@ -66,10 +66,10 @@ func (r *PostgresUserRepository) Insert(ctx context.Context, user model.User) (m
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
 			insert into privatekeeper.user
-				(id, login, password, crypt_key, created_at, updated_at)
+				(id, login, password, crypt_key, created_at)
 			values
 				($1, $2, $3, $4, NOW(), NOW())
-			returning id, login, password, crypt_key, created_at, updated_at;
+			returning id, login, password, crypt_key, created_at;
 			`,
 		user.ID,
 		user.Login,

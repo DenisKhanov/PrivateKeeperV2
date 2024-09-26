@@ -281,7 +281,6 @@ func (c *CreditCardHandlerTestSuite) Test_GetLoadCreditCard() {
 			PinCode:   "2222",
 			MetaData:  "some metadata",
 			CreatedAt: time.Date(2020, 1, 1, 12, 0, 0, 0, time.UTC),
-			UpdatedAt: time.Date(2020, 1, 1, 12, 0, 0, 0, time.UTC),
 		},
 		{
 			ID:        "another id",
@@ -293,7 +292,6 @@ func (c *CreditCardHandlerTestSuite) Test_GetLoadCreditCard() {
 			PinCode:   "2222",
 			MetaData:  "another metadata",
 			CreatedAt: time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
-			UpdatedAt: time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		},
 	}
 
@@ -309,7 +307,6 @@ func (c *CreditCardHandlerTestSuite) Test_GetLoadCreditCard() {
 			PinCode:   v.PinCode,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: v.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 

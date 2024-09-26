@@ -99,7 +99,6 @@ func (s *CreditCardService) SaveCreditCard(ctx context.Context, req model.Credit
 		PinCode:   req.PinCode,
 		MetaData:  savedCreditCard.MetaData,
 		CreatedAt: savedCreditCard.CreatedAt,
-		UpdatedAt: savedCreditCard.UpdatedAt,
 	}, nil
 }
 
@@ -142,7 +141,6 @@ func (s *CreditCardService) LoadAllCreditCard(ctx context.Context, spec specific
 			PinCode:   card.PinCode,
 			MetaData:  encryptedCard.MetaData,
 			CreatedAt: encryptedCard.CreatedAt,
-			UpdatedAt: encryptedCard.UpdatedAt,
 		})
 	}
 

@@ -9,7 +9,6 @@ create table if not exists privatekeeper.user
     password                bytea not null,
     crypt_key               bytea not null,
     created_at              timestamp not null,
-    updated_at              timestamp not null,
     constraint pk_user primary key (id),
     constraint ux_user__login unique (login)
 );
@@ -25,7 +24,6 @@ create table if not exists privatekeeper.data
     data                    bytea not null,
     metadata                text,
     created_at              timestamp not null,
-    updated_at              timestamp not null,
     constraint pk_credit_card primary key (id, type),
     constraint fk_owner_id foreign key (owner_id) references privatekeeper.user (id)
 ) partition by list (type);

@@ -59,7 +59,6 @@ func (h *TextDataHandler) PostSaveTextData(ctx context.Context, in *pb.PostTextD
 		Text:      text.Text,
 		Metadata:  text.MetaData,
 		CreatedAt: text.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: text.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -84,7 +83,6 @@ func (h *TextDataHandler) GetLoadTextData(ctx context.Context, in *pb.GetTextDat
 			Text:      v.Text,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: v.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 

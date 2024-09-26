@@ -21,7 +21,6 @@ type CreditCard struct {
 	PinCode   string
 	MetaData  string
 	CreatedAt time.Time
-	UpdatedAt time.Time
 }
 
 type CreditCardCryptData struct {
@@ -37,6 +36,5 @@ type CreditCardDB struct {
 	OwnerID   string    `db:"owner_id"`
 	CryptData []byte    `db:"data"`
 	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
 	MetaData  string    `db:"meta_data"`
 }
