@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 )
 
 type CredentialsService interface {
-	SaveCredentials(token string, cred model.CredentialsPostRequest) (model.Credentials, error)
-	LoadCredentials(token string, cred model.CredentialsLoadRequest) ([]model.Credentials, error)
+	SaveCredentials(ctx context.Context, token string, cred model.CredentialsPostRequest) (model.Credentials, error)
+	LoadCredentials(ctx context.Context, token string, cred model.CredentialsLoadRequest) ([]model.Credentials, error)
 }
 
 type CredentialsProvider struct {

@@ -10,14 +10,14 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/binary_data"
 )
 
-func (u *BinaryDataPBClient) LoadBinaryData(token string, bData model.BinaryDataLoadRequest) ([]model.BinaryData, error) {
+func (u *BinaryDataPBClient) LoadBinaryData(ctx context.Context, token string, bData model.BinaryDataLoadRequest) ([]model.BinaryData, error) {
 	req := &pb.GetBinaryDataRequest{
 		Name:     bData.Name,
 		Metadata: bData.MetaData,
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.binaryDataService.GetLoadBinaryData(ctx, req)
 	if err != nil {

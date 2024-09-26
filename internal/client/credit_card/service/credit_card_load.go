@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 )
 
-func (p *CreditCardProvider) Load() {
+func (p *CreditCardProvider) Load(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	if !p.state.IsAuthorized() {

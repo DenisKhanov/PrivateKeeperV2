@@ -2,6 +2,7 @@ package client
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/logcfg"
 	"github.com/sirupsen/logrus"
@@ -32,8 +33,9 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/tlsconfig"
 )
 
-func Run() { //nolint:cyclop
+func Run() {
 
+	ctx := context.Background()
 	cfg, err := config.New()
 	if err != nil {
 		log.Println("Failed to initialize config", err.Error())
@@ -107,27 +109,27 @@ func Run() { //nolint:cyclop
 
 		switch input {
 		case "1":
-			userService.LoginUser()
+			userService.LoginUser(ctx)
 		case "2":
-			userService.RegisterUser()
+			userService.RegisterUser(ctx)
 		case "3":
-			creditCardService.Save()
+			creditCardService.Save(ctx)
 		case "4":
-			creditCardService.Load()
+			creditCardService.Load(ctx)
 		case "5":
-			textDataService.Save()
+			textDataService.Save(ctx)
 		case "6":
-			textDataService.Load()
+			textDataService.Load(ctx)
 		case "7":
-			credentialsService.Save()
+			credentialsService.Save(ctx)
 		case "8":
-			credentialsService.Load()
+			credentialsService.Load(ctx)
 		case "9":
-			binaryService.Save()
+			binaryService.Save(ctx)
 		case "10":
-			binaryService.Load()
+			binaryService.Load(ctx)
 		case "11":
-			clientState.SetWorkingDirectory()
+			clientState.SetWorkingDirectory(ctx)
 		case "0":
 			fmt.Println("Application shutdown.")
 			return

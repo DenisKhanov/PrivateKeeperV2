@@ -10,7 +10,7 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/binary_data"
 )
 
-func (u *BinaryDataPBClient) SaveBinaryData(token string, bData model.BinaryDataPostRequest) (model.BinaryData, error) {
+func (u *BinaryDataPBClient) SaveBinaryData(ctx context.Context, token string, bData model.BinaryDataPostRequest) (model.BinaryData, error) {
 	req := &pb.PostBinaryDataRequest{
 		Data:      bData.Data,
 		Name:      bData.Name,
@@ -19,7 +19,7 @@ func (u *BinaryDataPBClient) SaveBinaryData(token string, bData model.BinaryData
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.binaryDataService.PostSaveBinaryData(ctx, req)
 	if err != nil {

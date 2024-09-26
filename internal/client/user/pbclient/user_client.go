@@ -16,13 +16,13 @@ func NewUserPBClient(u pb.UserServiceClient) *UserPBClient {
 	}
 }
 
-func (u *UserPBClient) LoginUser(login, password string) (string, error) {
+func (u *UserPBClient) LoginUser(ctx context.Context, login, password string) (string, error) {
 	req := &pb.PostUserLoginRequest{
 		Login:    login,
 		Password: password,
 	}
 
-	resp, err := u.userService.PostLoginUser(context.Background(), req)
+	resp, err := u.userService.PostLoginUser(ctx, req)
 	if err != nil {
 		return "", err
 	}
@@ -30,13 +30,13 @@ func (u *UserPBClient) LoginUser(login, password string) (string, error) {
 	return resp.Token, nil
 }
 
-func (u *UserPBClient) RegisterUser(login, password string) (string, error) {
+func (u *UserPBClient) RegisterUser(ctx context.Context, login, password string) (string, error) {
 	req := &pb.PostUserRegisterRequest{
 		Login:    login,
 		Password: password,
 	}
 
-	resp, err := u.userService.PostRegisterUser(context.Background(), req)
+	resp, err := u.userService.PostRegisterUser(ctx, req)
 	if err != nil {
 		return "", err
 	}

@@ -1,12 +1,13 @@
 package service
 
 import (
+	"context"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 )
 
 type UserService interface {
-	RegisterUser(login, password string) (string, error)
-	LoginUser(login, password string) (string, error)
+	RegisterUser(ctx context.Context, login, password string) (string, error)
+	LoginUser(ctx context.Context, login, password string) (string, error)
 }
 
 type UserProvider struct {

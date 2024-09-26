@@ -9,7 +9,7 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credentials"
 )
 
-func (u *CredentialsPBClient) SaveCredentials(token string, cred model.CredentialsPostRequest) (model.Credentials, error) {
+func (u *CredentialsPBClient) SaveCredentials(ctx context.Context, token string, cred model.CredentialsPostRequest) (model.Credentials, error) {
 	req := &pb.PostCredentialsRequest{
 		Login:    cred.Login,
 		Password: cred.Password,
@@ -17,7 +17,7 @@ func (u *CredentialsPBClient) SaveCredentials(token string, cred model.Credentia
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.credentialsService.PostSaveCredentials(ctx, req)
 	if err != nil {

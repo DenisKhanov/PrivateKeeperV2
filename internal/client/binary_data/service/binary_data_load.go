@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 )
 
-func (p *BinaryDataProvider) Load() {
+func (p *BinaryDataProvider) Load(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	if !p.state.IsAuthorized() {
@@ -39,7 +40,7 @@ func (p *BinaryDataProvider) Load() {
 	scanner.Scan()
 	req.MetaData = scanner.Text()
 
-	bData, err := p.binaryDataService.LoadBinaryData(p.state.GetToken(), req)
+	bData, err := p.binaryDataService.LoadBinaryData(ctx, p.state.GetToken(), req)
 	if err != nil {
 		lib.UnpackGRPCError(err)
 		return

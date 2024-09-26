@@ -9,7 +9,7 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credit_card"
 )
 
-func (u *CreditCardPBClient) LoadCreditCard(token string, card model.CreditCardLoadRequest) ([]model.CreditCard, error) {
+func (u *CreditCardPBClient) LoadCreditCard(ctx context.Context, token string, card model.CreditCardLoadRequest) ([]model.CreditCard, error) {
 	req := &pb.GetCreditCardRequest{
 		Number:        card.Number,
 		Owner:         card.Owner,
@@ -21,7 +21,7 @@ func (u *CreditCardPBClient) LoadCreditCard(token string, card model.CreditCardL
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.creditCardService.GetLoadCreditCard(ctx, req)
 	if err != nil {

@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 )
 
 type CreditCardService interface {
-	SaveCreditCard(token string, card model.CreditCardPostRequest) (model.CreditCard, error)
-	LoadCreditCard(token string, card model.CreditCardLoadRequest) ([]model.CreditCard, error)
+	SaveCreditCard(ctx context.Context, token string, card model.CreditCardPostRequest) (model.CreditCard, error)
+	LoadCreditCard(ctx context.Context, token string, card model.CreditCardLoadRequest) ([]model.CreditCard, error)
 }
 
 type CreditCardProvider struct {

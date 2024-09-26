@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 )
 
-func (p *CredentialsProvider) Save() {
+func (p *CredentialsProvider) Save(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	if !p.state.IsAuthorized() {

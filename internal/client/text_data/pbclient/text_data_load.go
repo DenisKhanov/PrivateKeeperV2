@@ -10,14 +10,14 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/text_data"
 )
 
-func (u *TextDataPBClient) LoadTextData(token string, textData model.TextDataLoadRequest) ([]model.TextData, error) {
+func (u *TextDataPBClient) LoadTextData(ctx context.Context, token string, textData model.TextDataLoadRequest) ([]model.TextData, error) {
 	req := &pb.GetTextDataRequest{
 		Text:     textData.Text,
 		Metadata: textData.MetaData,
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.textDataService.GetLoadTextData(ctx, req)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credit_card"
 )
 
-func (u *CreditCardPBClient) SaveCreditCard(token string, card model.CreditCardPostRequest) (model.CreditCard, error) {
+func (u *CreditCardPBClient) SaveCreditCard(ctx context.Context, token string, card model.CreditCardPostRequest) (model.CreditCard, error) {
 	req := &pb.PostCreditCardRequest{
 		Number:    card.Number,
 		OwnerName: card.OwnerName,
@@ -20,7 +20,7 @@ func (u *CreditCardPBClient) SaveCreditCard(token string, card model.CreditCardP
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.creditCardService.PostSaveCreditCard(ctx, req)
 	if err != nil {

@@ -2,6 +2,7 @@ package service //nolint:dupl
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -11,7 +12,7 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/lib"
 )
 
-func (u *UserProvider) LoginUser() {
+func (u *UserProvider) LoginUser(ctx context.Context) {
 	scanner := bufio.NewScanner(os.Stdin)
 	red := color.New(color.FgRed).SprintFunc()
 
@@ -39,7 +40,7 @@ func (u *UserProvider) LoginUser() {
 		return
 	}
 
-	token, err := u.userService.LoginUser(login, password)
+	token, err := u.userService.LoginUser(ctx, login, password)
 	if err != nil {
 		lib.UnpackGRPCError(err)
 	} else {

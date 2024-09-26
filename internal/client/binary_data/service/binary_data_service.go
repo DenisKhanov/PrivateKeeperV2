@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 )
 
 type BinaryDataService interface {
-	SaveBinaryData(token string, bData model.BinaryDataPostRequest) (model.BinaryData, error)
-	LoadBinaryData(token string, bData model.BinaryDataLoadRequest) ([]model.BinaryData, error)
+	SaveBinaryData(ctx context.Context, token string, bData model.BinaryDataPostRequest) (model.BinaryData, error)
+	LoadBinaryData(ctx context.Context, token string, bData model.BinaryDataLoadRequest) ([]model.BinaryData, error)
 }
 
 type BinaryDataProvider struct {

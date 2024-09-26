@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 )
 
-func (p *BinaryDataProvider) Save() {
+func (p *BinaryDataProvider) Save(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	if !p.state.IsAuthorized() {
@@ -50,7 +51,7 @@ func (p *BinaryDataProvider) Save() {
 	scanner.Scan()
 	req.MetaData = scanner.Text()
 
-	_, err = p.binaryDataService.SaveBinaryData(p.state.GetToken(), req)
+	_, err = p.binaryDataService.SaveBinaryData(ctx, p.state.GetToken(), req)
 	if err != nil {
 		lib.UnpackGRPCError(err)
 		return

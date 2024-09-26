@@ -10,7 +10,7 @@ import (
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credentials"
 )
 
-func (u *CredentialsPBClient) LoadCredentials(token string, cred model.CredentialsLoadRequest) ([]model.Credentials, error) {
+func (u *CredentialsPBClient) LoadCredentials(ctx context.Context, token string, cred model.CredentialsLoadRequest) ([]model.Credentials, error) {
 	req := &pb.GetCredentialsRequest{
 		Login:    cred.Login,
 		Password: cred.Password,
@@ -18,7 +18,7 @@ func (u *CredentialsPBClient) LoadCredentials(token string, cred model.Credentia
 	}
 
 	md := metadata.New(map[string]string{"token": token})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := u.credentialsService.GetLoadCredentials(ctx, req)
 	if err != nil {

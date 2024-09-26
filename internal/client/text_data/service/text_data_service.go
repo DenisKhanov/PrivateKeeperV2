@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 )
 
 type TextDataService interface {
-	SaveTextData(token string, text model.TextDataPostRequest) (model.TextData, error)
-	LoadTextData(token string, textData model.TextDataLoadRequest) ([]model.TextData, error)
+	SaveTextData(ctx context.Context, token string, text model.TextDataPostRequest) (model.TextData, error)
+	LoadTextData(ctx context.Context, token string, textData model.TextDataLoadRequest) ([]model.TextData, error)
 }
 
 type TextDataProvider struct {
