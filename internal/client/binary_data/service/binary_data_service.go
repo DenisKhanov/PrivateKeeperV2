@@ -52,7 +52,7 @@ func (p *BinaryDataProvider) Save(ctx context.Context) {
 	fmt.Println(cyanBold("Input binary data to save 'path name extension metadata':"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input path as %s: ", yellow("'text'"))
+	fmt.Printf("Input path to your file as %s: ", yellow("'example (./downloads)'"))
 	scanner.Scan()
 	path := scanner.Text()
 
@@ -64,15 +64,15 @@ func (p *BinaryDataProvider) Save(ctx context.Context) {
 
 	req.Data = data
 
-	fmt.Printf("Input name as %s: ", yellow("'text'"))
+	fmt.Printf("Input file name as %s: ", yellow("'example (main)'"))
 	scanner.Scan()
 	req.Name = scanner.Text()
 
-	fmt.Printf("Input extension as %s: ", yellow("'text'"))
+	fmt.Printf("Input file extension as %s: ", yellow("'example (go)'"))
 	scanner.Scan()
 	req.Extension = scanner.Text()
 
-	fmt.Printf("Input metadata as %s: ", yellow("'text'"))
+	fmt.Printf("Input file description as %s: ", yellow("'text'"))
 	scanner.Scan()
 	req.MetaData = scanner.Text()
 
@@ -109,6 +109,7 @@ func (p *BinaryDataProvider) LoadAllInfo(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
@@ -117,9 +118,13 @@ func (p *BinaryDataProvider) LoadAllInfo(ctx context.Context) {
 		sb.WriteString("Data type: " + dataInfo.DataType + "\n")
 		sb.WriteString("Metadata : " + dataInfo.MetaData + "\n")
 		sb.WriteString("Created at: : " + dataInfo.CreatedAt + "\n")
-		sb.WriteString("-------------------------------------" + "\n")
+		sb.WriteString(green("-------------------------------------") + "\n")
 	}
-	fmt.Println(sb.String())
+	if len(binariesDataInfo) > 0 {
+		fmt.Println(sb.String())
+	} else {
+		fmt.Println(yellow("Your haven't saved any data or data load filed, please try again"))
+	}
 }
 
 // LoadData loads specific binary data by its ID, saves it to the client's working directory,
@@ -144,7 +149,7 @@ func (p *BinaryDataProvider) LoadData(ctx context.Context) {
 	fmt.Println(cyanBold("Input data ID to load binary data:"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input data ID as %s: ", yellow("'text'"))
+	fmt.Printf("Input data ID as %s: ", yellow("'example (b7fa5761-7e83-11ef-a610-0242ac140004)'"))
 	scanner.Scan()
 	req.ID = scanner.Text()
 

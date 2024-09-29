@@ -6,51 +6,50 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"os"
-	"path"
 	"runtime"
 	"testing"
 )
 
 func TestRunLoggerConfig_TableDriven(t *testing.T) {
 	tests := []struct {
-		name        string
-		envLogs     string
-		expectedLog *logrus.Logger
+		name             string
+		envLogs          string
+		filePath         string
+		expectedLogLevel logrus.Level
 	}{
 		{
-			name:    "Test with 'debug' log level",
-			envLogs: "debug",
-			expectedLog: &logrus.Logger{
-				Out: os.Stdout,
-				Formatter: &logrus.TextFormatter{
-					CallerPrettyfier: func(f *runtime.Frame) (function string, file string) {
-						_, filename := path.Split(f.File)
-						filename = fmt.Sprintf("%s.%d.%s", filename, f.Line, f.Function)
-						return "", filename
-					},
-				},
-				Hooks: make(logrus.LevelHooks),
-				Level: logrus.DebugLevel,
-			},
+			name:             "Test with 'debug' log level",
+			envLogs:          "debug",
+			filePath:         "./logTest.log",
+			expectedLogLevel: logrus.DebugLevel,
+		},
+		{
+			name:             "Test with 'info' log level",
+			envLogs:          "info",
+			filePath:         "./logTest.log",
+			expectedLogLevel: logrus.InfoLevel,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Capture the log output
+
 			var logOutput bytes.Buffer
 			logrus.SetOutput(&logOutput)
 
-			// Run the logger configuration
-			RunLoggerConfig(tt.envLogs)
+			RunLoggerConfig(tt.envLogs, tt.filePath)
 
-			// Check log level
-			assert.Equal(t, tt.expectedLog.Level, logrus.GetLevel())
+			assert.Equal(t, tt.expectedLogLevel, logrus.GetLevel())
 
-			// Check log formatter
-			assert.NotNil(t, tt.expectedLog.Formatter)
+			formatter, ok := logrus.StandardLogger().Formatter.(*logrus.TextFormatter)
+			assert.True(t, ok, "formatter should be of type *logrus.TextFormatter")
+			assert.NotNil(t, formatter.CallerPrettyfier, "CallerPrettyfier should be set")
 
-			// Reset logrus settings to defaults
+			frame := runtime.Frame{File: "/path/to/file.go", Line: 123, Function: "TestFunction"}
+			_, file := formatter.CallerPrettyfier(&frame)
+			expectedFile := fmt.Sprintf("file.go.123.TestFunction")
+			assert.Equal(t, expectedFile, file, "CallerPrettyfier should format file information correctly")
+
 			logrus.SetOutput(os.Stdout)
 			logrus.SetLevel(logrus.InfoLevel)
 			logrus.SetReportCaller(false)

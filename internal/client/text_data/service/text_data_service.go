@@ -53,12 +53,12 @@ func (p *TextDataProvider) Save(ctx context.Context) {
 	fmt.Println(cyanBold("Input text data 'text metadata':"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input text data as %s: ", yellow("'text'"))
+	fmt.Printf("Input text data as %s: ", yellow("'your text'"))
 	scanner.Scan()
 	data := scanner.Text()
 	req.Text = data
 
-	fmt.Printf("Input metadata as %s: ", yellow("'text'"))
+	fmt.Printf("Input data description as %s: ", yellow("'text'"))
 	scanner.Scan()
 	data = scanner.Text()
 	req.MetaData = data
@@ -96,6 +96,7 @@ func (p *TextDataProvider) LoadAllInfo(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
@@ -104,9 +105,14 @@ func (p *TextDataProvider) LoadAllInfo(ctx context.Context) {
 		sb.WriteString("Data type: " + dataInfo.DataType + "\n")
 		sb.WriteString("Metadata : " + dataInfo.MetaData + "\n")
 		sb.WriteString("Created at: : " + dataInfo.CreatedAt + "\n")
-		sb.WriteString("-------------------------------------" + "\n")
+		sb.WriteString(green("-------------------------------------" + "\n"))
 	}
-	fmt.Println(sb.String())
+	if len(textDataInfo) > 0 {
+		fmt.Println(sb.String())
+	} else {
+		fmt.Println(yellow("Your haven't saved any data or data load filed, please try again"))
+	}
+
 }
 
 // LoadData retrieves and displays a specific text data entry based on the provided data ID.
@@ -131,7 +137,7 @@ func (p *TextDataProvider) LoadData(ctx context.Context) {
 	fmt.Println(cyanBold("Input data ID to load text data:"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input data ID as %s: ", yellow("'text'"))
+	fmt.Printf("Input data ID as %s: ", yellow("'example (b7fa5761-7e83-11ef-a610-0242ac140004)'"))
 	scanner.Scan()
 	req.ID = scanner.Text()
 
@@ -142,12 +148,12 @@ func (p *TextDataProvider) LoadData(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
+	sb.WriteString(green("-------------------------------------") + "\n")
 	sb.WriteString("Credential login: " + textData.Text + "\n")
 	sb.WriteString("Credential metadata: " + textData.MetaData + "\n")
-	sb.WriteString("-------------------------------------" + "\n")
+	sb.WriteString(green("-------------------------------------") + "\n")
 	fmt.Println(sb.String())
 
 	fmt.Print(green("Write info to file or print (leave empty or write to file): "))

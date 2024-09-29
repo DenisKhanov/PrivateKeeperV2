@@ -90,44 +90,46 @@ func Run() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	blue := color.New(color.FgBlue).SprintFunc()
+	red := color.New(color.FgRed).SprintFunc()
+	green := color.New(color.FgGreen).SprintFunc()
 
 	for {
 		if clientState.IsAuthorized() {
-			fmt.Printf("You are authorized as %s\n", blue(clientState.GetLogin()))
+			fmt.Printf(green("\nYou are authorized as %s\n"), blue(clientState.GetLogin()))
 		} else {
-			fmt.Printf("You are not authorized, please login or register\n")
+			fmt.Printf(red("\nYou are not authorized, please login or register\n\n"))
 		}
 
 		if clientState.GetDirPath() == "" {
-			fmt.Printf("Working directory is not set \n")
+			fmt.Printf(red("Working directory is not set \n\n"))
 		} else {
-			fmt.Printf("Working directory is set to %s\n", blue(clientState.GetDirPath()))
+			fmt.Printf(green("Working directory is set to %s\n\n"), blue(clientState.GetDirPath()))
 		}
 		//TODO реализовать подпункты
-		fmt.Println("Input command number to proceed")
+		fmt.Println(blue("Input command number to proceed\n"))
 		fmt.Println("[1] - login")
 		fmt.Println("[2] - register")
-		fmt.Println("---------------------------------------------")
+		fmt.Println(blue("---------------------------------------------"))
 		fmt.Println("[3] - save credit card")
 		fmt.Println("[4] - load all credit cards information")
 		fmt.Println("[5] - load credit card data")
-		fmt.Println("---------------------------------------------")
+		fmt.Println(blue("---------------------------------------------"))
 		fmt.Println("[6] - save text data")
 		fmt.Println("[7] - load all text data information")
 		fmt.Println("[8] - load text data")
-		fmt.Println("---------------------------------------------")
+		fmt.Println(blue("---------------------------------------------"))
 		fmt.Println("[9] - save credentials")
 		fmt.Println("[10] - load all credentials information")
 		fmt.Println("[11] - load credentials data")
-		fmt.Println("---------------------------------------------")
+		fmt.Println(blue("---------------------------------------------"))
 		fmt.Println("[12] - save binary file")
 		fmt.Println("[13] - load all binary files information")
 		fmt.Println("[14] - load binary file")
-		fmt.Println("---------------------------------------------")
+		fmt.Println(blue("---------------------------------------------"))
 		fmt.Println("[15] - set working directory")
-		fmt.Println("------------")
-		fmt.Println("|[0] - quit|")
-		fmt.Println("------------")
+		fmt.Println(blue("------------"))
+		fmt.Println(red("[0] - quit"), blue("|"))
+		fmt.Println(blue("------------"))
 		scanner.Scan()
 		input := scanner.Text()
 

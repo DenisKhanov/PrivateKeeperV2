@@ -99,6 +99,7 @@ func (p *CredentialsProvider) LoadAllInfo(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
@@ -107,9 +108,13 @@ func (p *CredentialsProvider) LoadAllInfo(ctx context.Context) {
 		sb.WriteString("Data type: " + dataInfo.DataType + "\n")
 		sb.WriteString("Metadata : " + dataInfo.MetaData + "\n")
 		sb.WriteString("Created at: : " + dataInfo.CreatedAt + "\n")
-		sb.WriteString("-------------------------------------" + "\n")
+		sb.WriteString(green(green("-------------------------------------")) + "\n")
 	}
-	fmt.Println(sb.String())
+	if len(credentialsDataInfo) > 0 {
+		fmt.Println(sb.String())
+	} else {
+		fmt.Println(yellow("Your haven't saved any data or data load filed, please try again"))
+	}
 }
 
 // LoadData retrieves specific credentials data based on the provided ID and displays it.
@@ -134,7 +139,7 @@ func (p *CredentialsProvider) LoadData(ctx context.Context) {
 	fmt.Println(cyanBold("Input data ID to load credentials data:"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input data ID as %s: ", yellow("'text'"))
+	fmt.Printf("Input data ID as %s: ", yellow("'example (b7fa5761-7e83-11ef-a610-0242ac140004)'"))
 	scanner.Scan()
 	req.ID = scanner.Text()
 
@@ -145,13 +150,13 @@ func (p *CredentialsProvider) LoadData(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
+	sb.WriteString(green("-------------------------------------") + "\n")
 	sb.WriteString("Credential login: " + credentialsData.Login + "\n")
 	sb.WriteString("Credential password: " + credentialsData.Password + "\n")
 	sb.WriteString("Credential metadata: " + credentialsData.MetaData + "\n")
-	sb.WriteString("-------------------------------------" + "\n")
+	sb.WriteString(green("-------------------------------------") + "\n")
 	fmt.Println(sb.String())
 	fmt.Print(green("Write info to file or print (leave empty or write to file): "))
 	scanner.Scan()

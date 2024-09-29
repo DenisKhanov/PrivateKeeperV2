@@ -79,7 +79,7 @@ func (p *CreditCardProvider) Save(ctx context.Context) {
 	data = scanner.Text()
 	req.CVV = data
 
-	fmt.Printf("Input metadata as %s: ", yellow("'text'"))
+	fmt.Printf("Input data description as %s: ", yellow("'text'"))
 	scanner.Scan()
 	data = scanner.Text()
 	req.MetaData = data
@@ -117,6 +117,7 @@ func (p *CreditCardProvider) LoadAllInfo(ctx context.Context) {
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 	fmt.Println(green("-------------------------------------"))
 
 	var sb strings.Builder
@@ -125,9 +126,13 @@ func (p *CreditCardProvider) LoadAllInfo(ctx context.Context) {
 		sb.WriteString("Data type: " + dataInfo.DataType + "\n")
 		sb.WriteString("Metadata : " + dataInfo.MetaData + "\n")
 		sb.WriteString("Created at: : " + dataInfo.CreatedAt + "\n")
-		sb.WriteString("-------------------------------------" + "\n")
+		sb.WriteString(green("-------------------------------------") + "\n")
 	}
-	fmt.Println(sb.String())
+	if len(cardDataInfo) > 0 {
+		fmt.Println(sb.String())
+	} else {
+		fmt.Println(yellow("Your haven't saved any data or data load filed, please try again"))
+	}
 }
 
 // LoadData retrieves and displays the details of a specific credit card based on its ID.
@@ -152,7 +157,7 @@ func (p *CreditCardProvider) LoadData(ctx context.Context) {
 	fmt.Println(cyanBold("Input data ID to load binary data:"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input data ID as %s: ", yellow("'text'"))
+	fmt.Printf("Input data ID as %s: ", yellow("'example (b7fa5761-7e83-11ef-a610-0242ac140004)'"))
 	scanner.Scan()
 	req.ID = scanner.Text()
 
@@ -162,19 +167,17 @@ func (p *CreditCardProvider) LoadData(ctx context.Context) {
 		return
 	}
 
-	fmt.Println("-------------------------------------")
-
 	green := color.New(color.FgGreen).SprintFunc()
 
 	var sb strings.Builder
-
+	sb.WriteString(red("-------------------------------------") + "\n")
 	sb.WriteString("Card number: " + cardData.Number + "\n")
 	sb.WriteString("Card owner: " + cardData.OwnerName + "\n")
 	sb.WriteString("Card expires at: " + cardData.ExpiresAt + "\n")
 	sb.WriteString("Card cvv: " + cardData.CVV + "\n")
 	sb.WriteString("Card in code: " + cardData.PinCode + "\n")
 	sb.WriteString("Card metadata: " + cardData.MetaData + "\n")
-	sb.WriteString("-------------------------------------" + "\n")
+	sb.WriteString(red("-------------------------------------") + "\n")
 	fmt.Println(sb.String())
 	fmt.Print(green("Write info to file or print (leave empty or write to file): "))
 	scanner.Scan()

@@ -68,7 +68,7 @@ func (c *ClientState) SetWorkingDirectory() {
 	fmt.Println(yellowBold("Write path to your working directory (will be created if it doesn't exist)"))
 
 	// Запрос ввода пути
-	fmt.Printf("Input path to working directory: ")
+	fmt.Printf("Input path to working directory %s :", yellowBold("example (./downloads)"))
 	scanner.Scan() // Считываем введенный текст
 	path := scanner.Text()
 
