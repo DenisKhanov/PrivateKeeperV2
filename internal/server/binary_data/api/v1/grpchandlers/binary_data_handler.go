@@ -9,25 +9,29 @@ import (
 	"time"
 
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/binary_data"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/binary_data/specification"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 )
 
+// BinaryDataService defines the methods for handling binary data operations.
 type BinaryDataService interface {
 	SaveBinaryData(ctx context.Context, req model.BinaryDataPostRequest) (model.BinaryData, error)
-	LoadAllBinaryData(ctx context.Context, spec specification.BinaryDataSpecification) ([]model.BinaryData, error)
+	LoadBinaryData(ctx context.Context, dataID string) (model.BinaryData, error)
+	LoadAllBinaryInfo(ctx context.Context) ([]model.DataInfo, error)
 }
 
+// Validator defines the method for validating binary data post requests.
 type Validator interface {
 	ValidatePostRequest(req *model.BinaryDataPostRequest) (map[string]string, bool)
 }
 
+// BinaryDataHandler implements the gRPC server for handling binary data requests.
 type BinaryDataHandler struct {
-	binaryDataService BinaryDataService
-	pb.UnimplementedBinaryDataServiceServer
-	validator Validator
+	binaryDataService                       BinaryDataService // Service for binary data operations
+	pb.UnimplementedBinaryDataServiceServer                   // Embed the unimplemented server to provide backward compatibility
+	validator                               Validator         // Validator for request validation
 }
 
+// New creates a new instance of BinaryDataHandler.
 func New(binaryDataService BinaryDataService, validator Validator) *BinaryDataHandler {
 	return &BinaryDataHandler{
 		binaryDataService: binaryDataService,
@@ -35,35 +39,7 @@ func New(binaryDataService BinaryDataService, validator Validator) *BinaryDataHa
 	}
 }
 
-func (h *BinaryDataHandler) GetLoadBinaryData(ctx context.Context, in *pb.GetBinaryDataRequest) (*pb.GetBinaryDataResponse, error) {
-	spec, err := specification.NewTextDataSpecification(in)
-	if err != nil {
-		logrus.WithError(err).Error("Error while creating text data specification: ")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	binaries, err := h.binaryDataService.LoadAllBinaryData(ctx, spec)
-	if err != nil {
-		logrus.WithError(err).Error("Error while loading binary data: ")
-		return nil, status.Error(codes.Internal, "internal error")
-	}
-
-	binaryData := make([]*pb.BinaryData, 0, len(binaries))
-	for _, v := range binaries {
-		binaryData = append(binaryData, &pb.BinaryData{
-			Id:        v.ID,
-			OwnerId:   v.OwnerID,
-			Data:      v.Data,
-			Name:      v.Name,
-			Extension: v.Extension,
-			Metadata:  v.MetaData,
-			CreatedAt: v.CreatedAt.Format(time.RFC3339),
-		})
-	}
-
-	return &pb.GetBinaryDataResponse{Binaries: binaryData}, nil
-}
-
+// PostSaveBinaryData handles the gRPC request for saving binary data.
 func (h *BinaryDataHandler) PostSaveBinaryData(ctx context.Context, in *pb.PostBinaryDataRequest) (*pb.PostBinaryDataResponse, error) {
 	req := model.BinaryDataPostRequest{
 		Name:      in.Name,
@@ -92,4 +68,48 @@ func (h *BinaryDataHandler) PostSaveBinaryData(ctx context.Context, in *pb.PostB
 		Metadata:  binary.MetaData,
 		CreatedAt: binary.CreatedAt.Format(time.RFC3339Nano),
 	}, nil
+}
+
+// GetLoadAllBinaryDataInfo handles the gRPC request for loading all binary data information.
+func (h *BinaryDataHandler) GetLoadAllBinaryDataInfo(ctx context.Context, _ *pb.GetAllBinaryInfoRequest) (*pb.GetAllBinaryInfoResponse, error) {
+
+	binariesInfo, err := h.binaryDataService.LoadAllBinaryInfo(ctx)
+	if err != nil {
+		logrus.WithError(err).Error("Error while loading binary data: ")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	binaryInfos := make([]*pb.BinaryInfo, 0, len(binariesInfo))
+	for _, v := range binariesInfo {
+		binaryInfos = append(binaryInfos, &pb.BinaryInfo{
+			Id:        v.ID,
+			DataType:  v.DataType,
+			Metadata:  v.MetaData,
+			CreatedAt: v.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return &pb.GetAllBinaryInfoResponse{Binaries: binaryInfos}, nil
+}
+
+// GetLoadBinaryData handles the gRPC request for loading specific binary data.
+func (h *BinaryDataHandler) GetLoadBinaryData(ctx context.Context, in *pb.GetBinaryDataRequest) (*pb.GetBinaryDataResponse, error) {
+	dataID := in.Id
+
+	binaryData, err := h.binaryDataService.LoadBinaryData(ctx, dataID)
+	if err != nil {
+		logrus.WithError(err).Error("Error while loading binary data: ")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	bin := &pb.BinaryData{
+		Id:        binaryData.ID,
+		OwnerId:   binaryData.OwnerID,
+		Data:      binaryData.Data,
+		Name:      binaryData.Name,
+		Extension: binaryData.Extension,
+		Metadata:  binaryData.MetaData,
+		CreatedAt: binaryData.CreatedAt.Format(time.RFC3339Nano),
+	}
+	return &pb.GetBinaryDataResponse{BinaryData: bin}, nil
 }

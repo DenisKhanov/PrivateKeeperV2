@@ -9,10 +9,13 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
+// Service struct holds the AEAD (Authenticated Encryption with Associated Data) instance.
 type Service struct {
-	aead cipher.AEAD
+	aead cipher.AEAD // AEAD interface for encryption/decryption
 }
 
+// New initializes a new Service with the provided key.
+// It hashes the key using SHA-256 and creates a ChaCha20-Poly1305 AEAD instance.
 func New(key []byte) (*Service, error) {
 	hash := sha256.Sum256(key)
 	aead, err := chacha20poly1305.NewX(hash[:])
@@ -23,6 +26,7 @@ func New(key []byte) (*Service, error) {
 	return &Service{aead: aead}, nil
 }
 
+// EncryptWithMasterKey encrypts the given data using the master key.
 func (e *Service) EncryptWithMasterKey(data []byte) ([]byte, error) {
 	nonce := make([]byte, e.aead.NonceSize())
 	_, err := rand.Read(nonce)
@@ -34,6 +38,7 @@ func (e *Service) EncryptWithMasterKey(data []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
+// DecryptWithMasterKey decrypts the given data using the master key.
 func (e *Service) DecryptWithMasterKey(data []byte) ([]byte, error) {
 	nonce, ciphertext := data[:chacha20poly1305.NonceSizeX], data[chacha20poly1305.NonceSizeX:]
 	dec, err := e.aead.Open(nil, nonce, ciphertext, nil)
@@ -44,6 +49,7 @@ func (e *Service) DecryptWithMasterKey(data []byte) ([]byte, error) {
 	return dec, nil
 }
 
+// GenerateKey generates a new random encryption key.
 func (e *Service) GenerateKey() ([]byte, error) {
 	key := make([]byte, chacha20poly1305.KeySize)
 	_, err := rand.Read(key)
@@ -53,6 +59,7 @@ func (e *Service) GenerateKey() ([]byte, error) {
 	return key, nil
 }
 
+// Encrypt encrypts the given data using the provided key.
 func (e *Service) Encrypt(key, data []byte) ([]byte, error) {
 	aead, err := chacha20poly1305.NewX(key)
 	if err != nil {
@@ -69,6 +76,7 @@ func (e *Service) Encrypt(key, data []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
+// Decrypt decrypts the given data using the provided key.
 func (e *Service) Decrypt(key, data []byte) ([]byte, error) {
 	aead, err := chacha20poly1305.NewX(key)
 	if err != nil {

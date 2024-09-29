@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	perm = 0o755
+	perm = 0o755 // Default permission for created directories and files
 )
 
+// SaveToFile saves the provided data as a string to the specified file path.
+// If the directory does not exist, it attempts to create it.
 func SaveToFile(path string, data string) error {
 	path = filepath.FromSlash(path)
 
@@ -38,6 +40,8 @@ func SaveToFile(path string, data string) error {
 	return nil
 }
 
+// SaveBinaryToFile saves binary data to the specified file path.
+// If the directory does not exist, it attempts to create it.
 func SaveBinaryToFile(path string, data []byte) error {
 	path = filepath.FromSlash(path)
 
@@ -65,6 +69,8 @@ func SaveBinaryToFile(path string, data []byte) error {
 	return nil
 }
 
+// LoadFromFile loads binary data from the specified file path and returns it.
+// Returns an error if the file cannot be opened or read.
 func LoadFromFile(path string) ([]byte, error) {
 	path = filepath.FromSlash(path)
 

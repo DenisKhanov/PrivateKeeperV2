@@ -13,24 +13,28 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/pkg/jwtmanager"
 )
 
+// UserRepository interface defines methods for user-related database operations
 type UserRepository interface {
 	Insert(ctx context.Context, user model.User) (model.User, error)
 	SelectByLogin(ctx context.Context, login string) (model.User, error)
 }
 
+// CryptService interface defines methods for cryptographic operations
 type CryptService interface {
 	EncryptWithMasterKey(data []byte) ([]byte, error)
 	DecryptWithMasterKey(data []byte) ([]byte, error)
 	GenerateKey() ([]byte, error)
 }
 
+// UserService struct handles user-related business logic and dependencies
 type UserService struct {
-	repository UserRepository
-	crypt      CryptService
-	jwtManager *jwtmanager.JWTManager
-	redis      *cache.Redis
+	repository UserRepository         // User repository for database operations
+	crypt      CryptService           // Cryptographic service for data encryption/decryption
+	jwtManager *jwtmanager.JWTManager // JWT manager for token generation
+	redis      *cache.Redis           // Redis client for caching user data
 }
 
+// New creates a new instance of UserService with the provided dependencies
 func New(repository UserRepository, crypt CryptService, jwtManager *jwtmanager.JWTManager, redis *cache.Redis) *UserService {
 	return &UserService{
 		repository: repository,
@@ -40,6 +44,7 @@ func New(repository UserRepository, crypt CryptService, jwtManager *jwtmanager.J
 	}
 }
 
+// Login authenticates a user and returns a JWT token
 func (u *UserService) Login(ctx context.Context, req model.UserLoginRequest) (string, error) {
 	user, err := u.repository.SelectByLogin(ctx, req.Login)
 	if err != nil {
@@ -69,6 +74,7 @@ func (u *UserService) Login(ctx context.Context, req model.UserLoginRequest) (st
 	return token, nil
 }
 
+// Register creates a new user and returns a JWT token
 func (u *UserService) Register(ctx context.Context, req model.UserRegisterRequest) (string, error) {
 	id, err := uuid.NewUUID()
 	if err != nil {

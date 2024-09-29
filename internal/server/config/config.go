@@ -8,22 +8,26 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds the application configuration parameters.
+// Each field corresponds to an expected environment variable.
 type Config struct {
-	EnvLogLevel     string
-	DatabaseURI     string
-	GRPCServer      string
-	TokenName       string
-	TokenSecret     string
-	TokenExpHours   int
-	ServerCert      string
-	ServerKey       string
-	ServerCa        string
-	RedisURL        string
-	RedisPassword   string
-	RedisDB         int
-	RedisTimeoutSec int
+	EnvLogLevel     string // Log level for the application (e.g., DEBUG, INFO)
+	DatabaseURI     string // Connection string for the database
+	GRPCServer      string // Address of the gRPC server
+	TokenName       string // Name of the authentication token
+	TokenSecret     string // Secret key for signing tokens
+	TokenExpHours   int    // Token expiration time in hours
+	ServerCert      string // Path to the server's SSL certificate
+	ServerKey       string // Path to the server's SSL key
+	ServerCa        string // Path to the server's CA file
+	RedisURL        string // URL of the Redis server
+	RedisPassword   string // Password for the Redis server
+	RedisDB         int    // Redis database number
+	RedisTimeoutSec int    // Timeout for Redis operations in seconds
 }
 
+// New initializes a new Config instance by loading environment variables from a .env file.
+// It returns a pointer to the Config struct and an error if any of the environment variables are missing or invalid.
 func New() (*Config, error) {
 	err := godotenv.Load("server.env")
 	if err != nil {

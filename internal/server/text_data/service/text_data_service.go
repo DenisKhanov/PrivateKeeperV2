@@ -4,35 +4,37 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/interceptors/auth"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/interceptors/keyextraction"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/text_data/specification"
 	"github.com/google/uuid"
 
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/pkg/jwtmanager"
 )
 
-const textData = "text_data"
+const textData = "text_data" // Define a constant for the data type
 
+// DataRepository interface defines methods for data persistence
 type DataRepository interface {
 	Insert(ctx context.Context, data model.Data) (model.Data, error)
 	SelectAll(ctx context.Context, userID, dataType string) ([]model.Data, error)
+	SelectByID(ctx context.Context, userID, dataType, dataID string) (model.Data, error)
 }
 
+// CryptService interface defines methods for encryption and decryption
 type CryptService interface {
 	Encrypt(key, data []byte) ([]byte, error)
 	Decrypt(key, data []byte) ([]byte, error)
 	GenerateKey() ([]byte, error)
 }
 
+// TextDataService provides methods to handle text data operations
 type TextDataService struct {
-	repository DataRepository
-	crypt      CryptService
-	jwtManager *jwtmanager.JWTManager
-	dataType   string
+	repository DataRepository         // Repository for data operations
+	crypt      CryptService           // Service for encryption and decryption
+	jwtManager *jwtmanager.JWTManager // JWT management
+	dataType   string                 // Type of data this service handles
 }
 
+// New initializes a new TextDataService instance
 func New(repository DataRepository, crypt CryptService, jwtManager *jwtmanager.JWTManager) *TextDataService {
 	return &TextDataService{
 		repository: repository,
@@ -42,13 +44,14 @@ func New(repository DataRepository, crypt CryptService, jwtManager *jwtmanager.J
 	}
 }
 
+// SaveTextData saves the provided text data to the repository
 func (s *TextDataService) SaveTextData(ctx context.Context, req model.TextDataPostRequest) (model.TextData, error) {
-	userID, ok := ctx.Value(auth.UserIDContextKey("userID")).(string)
+	userID, ok := ctx.Value(model.UserIDKey).(string)
 	if !ok {
 		return model.TextData{}, fmt.Errorf("failed to get userID from context")
 	}
 
-	userKey, ok := ctx.Value(keyextraction.UserKeyContextKey("userKey")).([]byte)
+	userKey, ok := ctx.Value(model.UserKey).([]byte)
 	if !ok {
 		return model.TextData{}, fmt.Errorf("failed to get userKey from context")
 	}
@@ -94,15 +97,11 @@ func (s *TextDataService) SaveTextData(ctx context.Context, req model.TextDataPo
 	}, nil
 }
 
-func (s *TextDataService) LoadAllTextData(ctx context.Context, spec specification.TextDataSpecification) ([]model.TextData, error) {
-	userID, ok := ctx.Value(auth.UserIDContextKey("userID")).(string)
+// LoadAllTextInfo retrieves all text data information for the user
+func (s *TextDataService) LoadAllTextInfo(ctx context.Context) ([]model.DataInfo, error) {
+	userID, ok := ctx.Value(model.UserIDKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("failed to get userID from context")
-	}
-
-	userKey, ok := ctx.Value(keyextraction.UserKeyContextKey("userKey")).([]byte)
-	if !ok {
-		return nil, fmt.Errorf("failed to get userKey from context")
 	}
 
 	encryptedTextData, err := s.repository.SelectAll(ctx, userID, s.dataType)
@@ -110,42 +109,52 @@ func (s *TextDataService) LoadAllTextData(ctx context.Context, spec specificatio
 		return nil, fmt.Errorf("select all text_data: %w", err)
 	}
 
-	texts := make([]model.TextData, 0, len(encryptedTextData))
+	textDataInfo := make([]model.DataInfo, 0, len(encryptedTextData))
 	for _, encryptedText := range encryptedTextData {
-		decryptedData, err := s.crypt.Decrypt(userKey, encryptedText.Data)
-		if err != nil {
-			return nil, fmt.Errorf("decrypt data: %w", err)
-		}
-
-		var data model.TextCryptData
-		err = json.Unmarshal(decryptedData, &data)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal data: %w", err)
-		}
-
-		texts = append(texts, model.TextData{
+		textDataInfo = append(textDataInfo, model.DataInfo{
 			ID:        encryptedText.ID,
-			OwnerID:   encryptedText.OwnerID,
-			Text:      data.Text,
+			DataType:  s.dataType,
 			MetaData:  encryptedText.MetaData,
 			CreatedAt: encryptedText.CreatedAt,
 		})
 	}
+	return textDataInfo, nil
+}
 
-	predicates := spec.MakeFilterPredicates()
-	var filteredTextData []model.TextData
-	for _, text := range texts {
-		take := true
-		for _, filteredTextDataWithSpec := range predicates {
-			if !filteredTextDataWithSpec(spec, text) {
-				take = false
-				break
-			}
-		}
-		if take {
-			filteredTextData = append(filteredTextData, text)
-		}
+// LoadTextData retrieves and decrypts text data by its ID
+func (s *TextDataService) LoadTextData(ctx context.Context, dataID string) (model.TextData, error) {
+	userID, ok := ctx.Value(model.UserIDKey).(string)
+	if !ok {
+		return model.TextData{}, fmt.Errorf("failed to get userID from context")
 	}
 
-	return filteredTextData, nil
+	userKey, ok := ctx.Value(model.UserKey).([]byte)
+	if !ok {
+		return model.TextData{}, fmt.Errorf("failed to get userKey from context")
+	}
+
+	encryptedTextData, err := s.repository.SelectByID(ctx, userID, s.dataType, dataID)
+	if err != nil {
+		return model.TextData{}, fmt.Errorf("select all text_data: %w", err)
+	}
+	decryptedData, err := s.crypt.Decrypt(userKey, encryptedTextData.Data)
+	if err != nil {
+		return model.TextData{}, fmt.Errorf("decrypt text: %w", err)
+	}
+
+	var decryptedTextData model.TextCryptData
+	err = json.Unmarshal(decryptedData, &decryptedTextData)
+	if err != nil {
+		return model.TextData{}, fmt.Errorf("unmarshal text: %w", err)
+	}
+
+	text := model.TextData{
+		ID:        encryptedTextData.ID,
+		OwnerID:   encryptedTextData.OwnerID,
+		Text:      decryptedTextData.Text,
+		MetaData:  encryptedTextData.MetaData,
+		CreatedAt: encryptedTextData.CreatedAt,
+	}
+
+	return text, nil
 }

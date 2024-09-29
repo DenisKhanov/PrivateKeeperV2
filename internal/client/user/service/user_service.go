@@ -11,16 +11,22 @@ import (
 	"strings"
 )
 
+// UserService is an interface that defines methods for user registration and login.
+// Implementations of this interface should provide the actual functionality.
 type UserService interface {
 	RegisterUser(ctx context.Context, login, password string) (string, error)
 	LoginUser(ctx context.Context, login, password string) (string, error)
 }
 
+// UserProvider is a struct that provides user-related functionalities.
+// It contains a reference to a UserService and a ClientState.
 type UserProvider struct {
-	userService UserService
-	state       *state.ClientState
+	userService UserService        // The user service implementation
+	state       *state.ClientState // Client state management
 }
 
+// NewUserService initializes a new UserProvider with the given user service and client state.
+// It returns a pointer to the newly created UserProvider.
 func NewUserService(u UserService, state *state.ClientState) *UserProvider {
 	return &UserProvider{
 		userService: u,
@@ -28,6 +34,8 @@ func NewUserService(u UserService, state *state.ClientState) *UserProvider {
 	}
 }
 
+// RegisterUser prompts the user for their login credentials to register.
+// It handles input validation and calls the user service to perform the registration.
 func (u *UserProvider) RegisterUser(ctx context.Context) {
 	scanner := bufio.NewScanner(os.Stdin)
 	red := color.New(color.FgRed).SprintFunc()
@@ -66,6 +74,8 @@ func (u *UserProvider) RegisterUser(ctx context.Context) {
 	}
 }
 
+// LoginUser prompts the user for their login credentials to log in.
+// It handles input validation and calls the user service to perform the login.
 func (u *UserProvider) LoginUser(ctx context.Context) {
 	scanner := bufio.NewScanner(os.Stdin)
 	red := color.New(color.FgRed).SprintFunc()

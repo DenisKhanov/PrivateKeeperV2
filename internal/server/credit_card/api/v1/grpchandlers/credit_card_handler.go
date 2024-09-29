@@ -9,25 +9,29 @@ import (
 	"time"
 
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/credit_card"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/credit_card/specification"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 )
 
+// CreditCardService defines the methods for operations related to credit cards.
 type CreditCardService interface {
 	SaveCreditCard(ctx context.Context, req model.CreditCardPostRequest) (model.CreditCard, error)
-	LoadAllCreditCard(ctx context.Context, spec specification.CreditCardSpecification) ([]model.CreditCard, error)
+	LoadCreditCardData(ctx context.Context, dataID string) (model.CreditCard, error)
+	LoadAllCreditCardInfo(ctx context.Context) ([]model.DataInfo, error)
 }
 
+// Validator defines the method for validating credit card requests.
 type Validator interface {
 	ValidatePostRequest(req *model.CreditCardPostRequest) (map[string]string, bool)
 }
 
+// CreditCardHandler is the gRPC handler for credit card-related operations.
 type CreditCardHandler struct {
-	creditCardService CreditCardService
-	pb.UnimplementedCreditCardServiceServer
-	validator Validator
+	creditCardService                       CreditCardService // The service for credit card operations
+	pb.UnimplementedCreditCardServiceServer                   // Embed the unimplemented server for compatibility
+	validator                               Validator         // The validator for incoming requests
 }
 
+// New creates a new instance of CreditCardHandler with the provided dependencies.
 func New(creditCardService CreditCardService, validator Validator) *CreditCardHandler {
 	return &CreditCardHandler{
 		creditCardService: creditCardService,
@@ -35,6 +39,8 @@ func New(creditCardService CreditCardService, validator Validator) *CreditCardHa
 	}
 }
 
+// PostSaveCreditCard handles the gRPC call for saving a new credit card.
+// It validates the request and saves the credit card data.
 func (h *CreditCardHandler) PostSaveCreditCard(ctx context.Context, in *pb.PostCreditCardRequest) (*pb.PostCreditCardResponse, error) {
 	req := model.CreditCardPostRequest{
 		Number:    in.Number,
@@ -71,33 +77,48 @@ func (h *CreditCardHandler) PostSaveCreditCard(ctx context.Context, in *pb.PostC
 	}, nil
 }
 
-func (h *CreditCardHandler) GetLoadCreditCard(ctx context.Context, in *pb.GetCreditCardRequest) (*pb.GetCreditCardResponse, error) {
-	spec, err := specification.NewCreditCardSpecification(in)
-	if err != nil {
-		logrus.WithError(err).Error("Error while creating credit card specification: ")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
+// GetLoadAllCreditCardDataInfo handles the gRPC call for loading all credit card information.
+func (h *CreditCardHandler) GetLoadAllCreditCardDataInfo(ctx context.Context, _ *pb.GetAllCreditCardInfoRequest) (*pb.GetAllCreditCardInfoResponse, error) {
 
-	cards, err := h.creditCardService.LoadAllCreditCard(ctx, spec)
+	cardInfo, err := h.creditCardService.LoadAllCreditCardInfo(ctx)
 	if err != nil {
-		logrus.WithError(err).Error("Error while loading credit cards: ")
+		logrus.WithError(err).Error("Error while loading credit card data: ")
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	creditCards := make([]*pb.CreditCard, 0, len(cards))
-	for _, v := range cards {
-		creditCards = append(creditCards, &pb.CreditCard{
+	cardInfos := make([]*pb.CreditCardInfo, 0, len(cardInfo))
+	for _, v := range cardInfo {
+		cardInfos = append(cardInfos, &pb.CreditCardInfo{
 			Id:        v.ID,
-			OwnerId:   v.OwnerID,
-			Number:    v.Number,
-			OwnerName: v.OwnerName,
-			ExpiresAt: v.ExpiresAt,
-			CvvCode:   v.CVV,
-			PinCode:   v.PinCode,
+			DataType:  v.DataType,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
 		})
 	}
 
-	return &pb.GetCreditCardResponse{Cards: creditCards}, nil
+	return &pb.GetAllCreditCardInfoResponse{Cards: cardInfos}, nil
+}
+
+// GetLoadCreditCard handles the gRPC call for loading a specific credit card's data.
+func (h *CreditCardHandler) GetLoadCreditCard(ctx context.Context, in *pb.GetCreditCardRequest) (*pb.GetCreditCardResponse, error) {
+	dataID := in.Id
+
+	cardData, err := h.creditCardService.LoadCreditCardData(ctx, dataID)
+	if err != nil {
+		logrus.WithError(err).Error("Error while loading credit card data: ")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	card := &pb.CreditCard{
+		Id:        cardData.ID,
+		OwnerId:   cardData.OwnerID,
+		Number:    cardData.Number,
+		OwnerName: cardData.OwnerName,
+		ExpiresAt: cardData.ExpiresAt,
+		CvvCode:   cardData.CVV,
+		PinCode:   cardData.PinCode,
+		Metadata:  cardData.MetaData,
+		CreatedAt: cardData.CreatedAt.Format(time.RFC3339Nano),
+	}
+	return &pb.GetCreditCardResponse{CardData: card}, nil
 }

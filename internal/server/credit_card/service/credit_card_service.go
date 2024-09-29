@@ -4,35 +4,37 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/credit_card/specification"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/interceptors/auth"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/interceptors/keyextraction"
 	"github.com/google/uuid"
 
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/pkg/jwtmanager"
 )
 
-const creditCard = "credit_card"
+const creditCard = "credit_card" // Constant for the credit card data type
 
+// DataRepository interface defines methods for data access.
 type DataRepository interface {
 	Insert(ctx context.Context, data model.Data) (model.Data, error)
 	SelectAll(ctx context.Context, userID, dataType string) ([]model.Data, error)
+	SelectByID(ctx context.Context, userID, dataType, dataID string) (model.Data, error)
 }
 
+// CryptService interface defines methods for encryption and decryption.
 type CryptService interface {
 	Encrypt(key, data []byte) ([]byte, error)
 	Decrypt(key, data []byte) ([]byte, error)
 	GenerateKey() ([]byte, error)
 }
 
+// CreditCardService struct manages credit card operations.
 type CreditCardService struct {
-	repository DataRepository
-	crypt      CryptService
-	jwtManager *jwtmanager.JWTManager
-	dataType   string
+	repository DataRepository         // Repository for data operations
+	crypt      CryptService           // Service for cryptographic operations
+	jwtManager *jwtmanager.JWTManager // JWT manager for authentication
+	dataType   string                 // Type of data managed (credit card)
 }
 
+// New creates a new instance of CreditCardService.
 func New(repository DataRepository, crypt CryptService, jwtManager *jwtmanager.JWTManager) *CreditCardService {
 	return &CreditCardService{
 		repository: repository,
@@ -42,13 +44,14 @@ func New(repository DataRepository, crypt CryptService, jwtManager *jwtmanager.J
 	}
 }
 
+// SaveCreditCard saves a new credit card to the repository.
 func (s *CreditCardService) SaveCreditCard(ctx context.Context, req model.CreditCardPostRequest) (model.CreditCard, error) {
-	userID, ok := ctx.Value(auth.UserIDContextKey("userID")).(string)
+	userID, ok := ctx.Value(model.UserIDKey).(string)
 	if !ok {
 		return model.CreditCard{}, fmt.Errorf("failed to get userID from context")
 	}
 
-	userKey, ok := ctx.Value(keyextraction.UserKeyContextKey("userKey")).([]byte)
+	userKey, ok := ctx.Value(model.UserKey).([]byte)
 	if !ok {
 		return model.CreditCard{}, fmt.Errorf("failed to get userKey from context")
 	}
@@ -102,62 +105,68 @@ func (s *CreditCardService) SaveCreditCard(ctx context.Context, req model.Credit
 	}, nil
 }
 
-func (s *CreditCardService) LoadAllCreditCard(ctx context.Context, spec specification.CreditCardSpecification) ([]model.CreditCard, error) {
-	userID, ok := ctx.Value(auth.UserIDContextKey("userID")).(string)
+// LoadAllCreditCardInfo retrieves all credit card information for the user.
+func (s *CreditCardService) LoadAllCreditCardInfo(ctx context.Context) ([]model.DataInfo, error) {
+	userID, ok := ctx.Value(model.UserIDKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("failed to get userID from context")
 	}
 
-	userKey, ok := ctx.Value(keyextraction.UserKeyContextKey("userKey")).([]byte)
-	if !ok {
-		return nil, fmt.Errorf("failed to get userKey from context")
-	}
-
-	encryptedCards, err := s.repository.SelectAll(ctx, userID, s.dataType)
+	encryptedCardData, err := s.repository.SelectAll(ctx, userID, s.dataType)
 	if err != nil {
-		return nil, fmt.Errorf("select all cards: %w", err)
+		return nil, fmt.Errorf("select all binary_data: %w", err)
 	}
 
-	cards := make([]model.CreditCard, 0, len(encryptedCards))
-	for _, encryptedCard := range encryptedCards {
-		decryptedData, err := s.crypt.Decrypt(userKey, encryptedCard.Data)
-		if err != nil {
-			return nil, fmt.Errorf("decrypt data: %w", err)
-		}
-
-		var card model.CreditCardCryptData
-		err = json.Unmarshal(decryptedData, &card)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal data: %w", err)
-		}
-
-		cards = append(cards, model.CreditCard{
-			ID:        encryptedCard.ID,
-			OwnerID:   encryptedCard.OwnerID,
-			Number:    card.Number,
-			OwnerName: card.OwnerName,
-			ExpiresAt: card.ExpiresAt,
-			CVV:       card.CVV,
-			PinCode:   card.PinCode,
-			MetaData:  encryptedCard.MetaData,
-			CreatedAt: encryptedCard.CreatedAt,
+	credCardDataInfo := make([]model.DataInfo, 0, len(encryptedCardData))
+	for _, encryptedBinary := range encryptedCardData {
+		credCardDataInfo = append(credCardDataInfo, model.DataInfo{
+			ID:        encryptedBinary.ID,
+			DataType:  s.dataType,
+			MetaData:  encryptedBinary.MetaData,
+			CreatedAt: encryptedBinary.CreatedAt,
 		})
 	}
+	return credCardDataInfo, nil
+}
 
-	predicates := spec.MakeFilterPredicates()
-	var filteredCards []model.CreditCard
-	for _, card := range cards {
-		take := true
-		for _, filterCardWithSpec := range predicates {
-			if !filterCardWithSpec(spec, card) {
-				take = false
-				break
-			}
-		}
-		if take {
-			filteredCards = append(filteredCards, card)
-		}
+// LoadCreditCardData retrieves and decrypts a specific credit card's data.
+func (s *CreditCardService) LoadCreditCardData(ctx context.Context, dataID string) (model.CreditCard, error) {
+	userID, ok := ctx.Value(model.UserIDKey).(string)
+	if !ok {
+		return model.CreditCard{}, fmt.Errorf("failed to get userID from context")
 	}
 
-	return filteredCards, nil
+	userKey, ok := ctx.Value(model.UserKey).([]byte)
+	if !ok {
+		return model.CreditCard{}, fmt.Errorf("failed to get userKey from context")
+	}
+
+	encryptedCardData, err := s.repository.SelectByID(ctx, userID, s.dataType, dataID)
+	if err != nil {
+		return model.CreditCard{}, fmt.Errorf("select all credit_card_data: %w", err)
+	}
+	decryptedData, err := s.crypt.Decrypt(userKey, encryptedCardData.Data)
+	if err != nil {
+		return model.CreditCard{}, fmt.Errorf("decrypt card: %w", err)
+	}
+
+	var decryptedCardData model.CreditCardCryptData
+	err = json.Unmarshal(decryptedData, &decryptedCardData)
+	if err != nil {
+		return model.CreditCard{}, fmt.Errorf("unmarshal card: %w", err)
+	}
+
+	card := model.CreditCard{
+		ID:        encryptedCardData.ID,
+		OwnerID:   encryptedCardData.OwnerID,
+		Number:    decryptedCardData.Number,
+		OwnerName: decryptedCardData.OwnerName,
+		ExpiresAt: decryptedCardData.ExpiresAt,
+		CVV:       decryptedCardData.CVV,
+		PinCode:   decryptedCardData.PinCode,
+		MetaData:  encryptedCardData.MetaData,
+		CreatedAt: encryptedCardData.CreatedAt,
+	}
+
+	return card, nil
 }

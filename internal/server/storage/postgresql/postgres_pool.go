@@ -9,10 +9,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// PostgresPool struct holds a connection pool to the PostgreSQL database.
 type PostgresPool struct {
-	DB *pgxpool.Pool
+	DB *pgxpool.Pool // Connection pool to PostgreSQL
 }
 
+// NewPool creates a new connection pool for PostgreSQL.
 func NewPool(ctx context.Context, connection string) (*PostgresPool, error) {
 	dbPool, err := pgxpool.New(ctx, connection)
 	if err != nil {

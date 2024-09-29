@@ -10,24 +10,28 @@ import (
 
 	pb "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/text_data"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
-	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/text_data/specification"
 )
 
+// TextDataService interface defines the methods for text data management.
 type TextDataService interface {
 	SaveTextData(ctx context.Context, req model.TextDataPostRequest) (model.TextData, error)
-	LoadAllTextData(ctx context.Context, spec specification.TextDataSpecification) ([]model.TextData, error)
+	LoadTextData(ctx context.Context, dataID string) (model.TextData, error)
+	LoadAllTextInfo(ctx context.Context) ([]model.DataInfo, error)
 }
 
+// Validator interface defines the method for validating requests.
 type Validator interface {
 	ValidatePostRequest(req *model.TextDataPostRequest) (map[string]string, bool)
 }
 
+// TextDataHandler struct implements the gRPC handler for text data operations.
 type TextDataHandler struct {
 	textDataService TextDataService
 	pb.UnimplementedTextDataServiceServer
 	validator Validator
 }
 
+// New creates a new instance of TextDataHandler.
 func New(textDataService TextDataService, validator Validator) *TextDataHandler {
 	return &TextDataHandler{
 		textDataService: textDataService,
@@ -35,6 +39,7 @@ func New(textDataService TextDataService, validator Validator) *TextDataHandler 
 	}
 }
 
+// PostSaveTextData handles the gRPC request to save text data.
 func (h *TextDataHandler) PostSaveTextData(ctx context.Context, in *pb.PostTextDataRequest) (*pb.PostTextDataResponse, error) {
 	req := model.TextDataPostRequest{
 		Text:     in.Text,
@@ -62,29 +67,44 @@ func (h *TextDataHandler) PostSaveTextData(ctx context.Context, in *pb.PostTextD
 	}, nil
 }
 
-func (h *TextDataHandler) GetLoadTextData(ctx context.Context, in *pb.GetTextDataRequest) (*pb.GetTextDataResponse, error) {
-	spec, err := specification.NewTextDataSpecification(in)
-	if err != nil {
-		logrus.WithError(err).Error("Error while creating text data specification: ")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
+// GetLoadAllTextDataInfo handles the gRPC request to load all text data information.
+func (h *TextDataHandler) GetLoadAllTextDataInfo(ctx context.Context, _ *pb.GetAllTextInfoRequest) (*pb.GetAllTextInfoResponse, error) {
 
-	texts, err := h.textDataService.LoadAllTextData(ctx, spec)
+	textInfo, err := h.textDataService.LoadAllTextInfo(ctx)
 	if err != nil {
 		logrus.WithError(err).Error("Error while loading text data: ")
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	textData := make([]*pb.TextData, 0, len(texts))
-	for _, v := range texts {
-		textData = append(textData, &pb.TextData{
+	textInfos := make([]*pb.TextInfo, 0, len(textInfo))
+	for _, v := range textInfo {
+		textInfos = append(textInfos, &pb.TextInfo{
 			Id:        v.ID,
-			OwnerId:   v.OwnerID,
-			Text:      v.Text,
+			DataType:  v.DataType,
 			Metadata:  v.MetaData,
 			CreatedAt: v.CreatedAt.Format(time.RFC3339),
 		})
 	}
 
-	return &pb.GetTextDataResponse{Text: textData}, nil
+	return &pb.GetAllTextInfoResponse{Text: textInfos}, nil
+}
+
+// GetLoadTextData handles the gRPC request to load text data by ID.
+func (h *TextDataHandler) GetLoadTextData(ctx context.Context, in *pb.GetTextDataRequest) (*pb.GetTextDataResponse, error) {
+	dataID := in.Id
+
+	textData, err := h.textDataService.LoadTextData(ctx, dataID)
+	if err != nil {
+		logrus.WithError(err).Error("Error while loading text data: ")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	text := &pb.TextData{
+		Id:        textData.ID,
+		OwnerId:   textData.OwnerID,
+		Text:      textData.Text,
+		Metadata:  textData.MetaData,
+		CreatedAt: textData.CreatedAt.Format(time.RFC3339Nano),
+	}
+	return &pb.GetTextDataResponse{TextData: text}, nil
 }

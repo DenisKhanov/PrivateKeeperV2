@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// NewServerTLS creates a new TLS configuration for a server using the provided certificate, key, and CA certificate file paths
 func NewServerTLS(cert, key, ca string) (*tls.Config, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -43,6 +44,7 @@ func NewServerTLS(cert, key, ca string) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
+// NewClientTLS creates a new TLS configuration for a client using the provided certificate, key, and CA certificate file paths
 func NewClientTLS(cert, key, ca string) (*tls.Config, error) {
 	wd, err := os.Getwd()
 	if err != nil {

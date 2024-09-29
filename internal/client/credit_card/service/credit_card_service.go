@@ -8,20 +8,28 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/model"
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/client/state"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
 
+// CreditCardService defines the interface for credit card operations.
+// It includes methods to save, load, and retrieve information about credit cards.
 type CreditCardService interface {
 	SaveCreditCard(ctx context.Context, token string, card model.CreditCardPostRequest) (model.CreditCard, error)
-	LoadCreditCard(ctx context.Context, token string, card model.CreditCardLoadRequest) ([]model.CreditCard, error)
+	LoadCreditCardData(ctx context.Context, token string, dataID string) (model.CreditCard, error)
+	LoadAllCreditCardDataInfo(ctx context.Context, token string) ([]model.DataInfo, error)
 }
 
+// CreditCardProvider provides methods for interacting with credit card services.
+// It holds a reference to a CreditCardService and client state.
 type CreditCardProvider struct {
-	creditCardService CreditCardService
-	state             *state.ClientState
+	creditCardService CreditCardService  // The service responsible for credit card operations
+	state             *state.ClientState // Client state to manage user session
 }
 
+// NewUserService creates a new CreditCardProvider instance.
+// It takes a CreditCardService and ClientState as parameters and returns the provider instance.
 func NewUserService(u CreditCardService, state *state.ClientState) *CreditCardProvider {
 	return &CreditCardProvider{
 		creditCardService: u,
@@ -29,6 +37,8 @@ func NewUserService(u CreditCardService, state *state.ClientState) *CreditCardPr
 	}
 }
 
+// Save prompts the user for credit card details and saves them using the credit card service.
+// It checks for user authorization and validates input before saving the card information.
 func (p *CreditCardProvider) Save(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
@@ -83,7 +93,9 @@ func (p *CreditCardProvider) Save(ctx context.Context) {
 	fmt.Println(color.New(color.FgGreen).SprintFunc()("Card successfully saved"))
 }
 
-func (p *CreditCardProvider) Load(ctx context.Context) {
+// LoadAllInfo retrieves and displays information about all saved credit cards.
+// It checks for user authorization and working directory setup before loading the data.
+func (p *CreditCardProvider) LoadAllInfo(ctx context.Context) {
 	red := color.New(color.FgRed).SprintFunc()
 
 	if !p.state.IsAuthorized() {
@@ -91,49 +103,60 @@ func (p *CreditCardProvider) Load(ctx context.Context) {
 		return
 	}
 
+	if p.state.GetDirPath() == "" {
+		fmt.Println(red("To proceed you must set working directory"))
+		return
+	}
+
+	cardDataInfo, err := p.creditCardService.LoadAllCreditCardDataInfo(ctx, p.state.GetToken())
+	if err != nil {
+		logrus.WithError(err).Error("All user data info load failed")
+		fmt.Println(red("All credit card data info load failed"), "please try again")
+		lib.UnpackGRPCError(err)
+		return
+	}
+
+	green := color.New(color.FgGreen).SprintFunc()
+	fmt.Println(green("-------------------------------------"))
+
+	var sb strings.Builder
+	for _, dataInfo := range cardDataInfo {
+		sb.WriteString("Data ID: " + dataInfo.ID + "\n")
+		sb.WriteString("Data type: " + dataInfo.DataType + "\n")
+		sb.WriteString("Metadata : " + dataInfo.MetaData + "\n")
+		sb.WriteString("Created at: : " + dataInfo.CreatedAt + "\n")
+		sb.WriteString("-------------------------------------" + "\n")
+	}
+	fmt.Println(sb.String())
+}
+
+// LoadData retrieves and displays the details of a specific credit card based on its ID.
+// It checks for user authorization and working directory setup before loading the card data.
+func (p *CreditCardProvider) LoadData(ctx context.Context) {
+	red := color.New(color.FgRed).SprintFunc()
+
+	if !p.state.IsAuthorized() {
+		fmt.Println(red("You are not authorized, please use 'login' or 'register'"))
+		return
+	}
+
+	if p.state.GetDirPath() == "" {
+		fmt.Println(red("To proceed you must set working directory"))
+		return
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 
 	cyanBold := color.New(color.FgCyan, color.Bold).SprintFunc()
-	req := model.CreditCardLoadRequest{}
-	fmt.Println(cyanBold("Input filter data to load credit cards 'number owner cvv pin metadata expires_after expires_before':"))
+	req := model.BinaryDataLoadRequest{}
+	fmt.Println(cyanBold("Input data ID to load binary data:"))
 
 	yellow := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("Input number in format %s: ", yellow("'dddd dddd dddd dddd'"))
+	fmt.Printf("Input data ID as %s: ", yellow("'text'"))
 	scanner.Scan()
-	data := scanner.Text()
-	req.Number = data
+	req.ID = scanner.Text()
 
-	fmt.Printf("Input owner in format %s: ", yellow("'name surname'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.Owner = data
-
-	fmt.Printf("Input cvv in format %s: ", yellow("'ddd'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.CvvCode = data
-
-	fmt.Printf("Input pin in format %s: ", yellow("'dddd'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.PinCode = data
-
-	fmt.Printf("Input metadata as %s: ", yellow("'text'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.Metadata = data
-
-	fmt.Printf("Input expires_after in format %s: ", yellow("'dd-mm-yyyy'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.ExpiresAfter = data
-
-	fmt.Printf("Input expires_before in format %s: ", yellow("'dd-mm-yyyy'"))
-	scanner.Scan()
-	data = scanner.Text()
-	req.ExpiresBefore = data
-
-	cards, err := p.creditCardService.LoadCreditCard(ctx, p.state.GetToken(), req)
+	cardData, err := p.creditCardService.LoadCreditCardData(ctx, p.state.GetToken(), req.ID)
 	if err != nil {
 		lib.UnpackGRPCError(err)
 		return
@@ -144,16 +167,15 @@ func (p *CreditCardProvider) Load(ctx context.Context) {
 	green := color.New(color.FgGreen).SprintFunc()
 
 	var sb strings.Builder
-	for _, card := range cards {
-		sb.WriteString("Card number: " + card.Number + "\n")
-		sb.WriteString("Card owner: " + card.OwnerName + "\n")
-		sb.WriteString("Card expires at: " + card.ExpiresAt + "\n")
-		sb.WriteString("Card cvv: " + card.CVV + "\n")
-		sb.WriteString("Card in code: " + card.PinCode + "\n")
-		sb.WriteString("Card metadata: " + card.MetaData + "\n")
-		sb.WriteString("-------------------------------------" + "\n")
-	}
 
+	sb.WriteString("Card number: " + cardData.Number + "\n")
+	sb.WriteString("Card owner: " + cardData.OwnerName + "\n")
+	sb.WriteString("Card expires at: " + cardData.ExpiresAt + "\n")
+	sb.WriteString("Card cvv: " + cardData.CVV + "\n")
+	sb.WriteString("Card in code: " + cardData.PinCode + "\n")
+	sb.WriteString("Card metadata: " + cardData.MetaData + "\n")
+	sb.WriteString("-------------------------------------" + "\n")
+	fmt.Println(sb.String())
 	fmt.Print(green("Write info to file or print (leave empty or write to file): "))
 	scanner.Scan()
 	path := scanner.Text()

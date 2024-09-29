@@ -12,14 +12,17 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// PostgresUserRepository defines a repository for user-related database operations
 type PostgresUserRepository struct {
-	postgresPool *postgresql.PostgresPool
+	postgresPool *postgresql.PostgresPool // Postgre SQL connection pool
 }
 
+// New creates a new instance of PostgresUserRepository
 func New(postgresPool *postgresql.PostgresPool) *PostgresUserRepository {
 	return &PostgresUserRepository{postgresPool: postgresPool}
 }
 
+// SelectByLogin retrieves a user from the database based on the login
 func (r *PostgresUserRepository) SelectByLogin(ctx context.Context, login string) (model.User, error) {
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
@@ -45,6 +48,7 @@ func (r *PostgresUserRepository) SelectByLogin(ctx context.Context, login string
 	return savedUser, nil
 }
 
+// SelectKeyByID retrieves the cryptographic key for a user by their ID
 func (r *PostgresUserRepository) SelectKeyByID(ctx context.Context, userID string) ([]byte, error) {
 	var userKey []byte
 	err := r.postgresPool.DB.QueryRow(ctx,
@@ -62,13 +66,14 @@ func (r *PostgresUserRepository) SelectKeyByID(ctx context.Context, userID strin
 	return userKey, nil
 }
 
+// Insert adds a new user to the database
 func (r *PostgresUserRepository) Insert(ctx context.Context, user model.User) (model.User, error) {
 	rows, err := r.postgresPool.DB.Query(ctx,
 		`
 			insert into privatekeeper.user
 				(id, login, password, crypt_key, created_at)
 			values
-				($1, $2, $3, $4, NOW(), NOW())
+				($1, $2, $3, $4, NOW())
 			returning id, login, password, crypt_key, created_at;
 			`,
 		user.ID,

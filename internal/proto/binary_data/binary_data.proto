@@ -5,42 +5,55 @@ package proto;
 option go_package = "github.com/DenisKhanov/PrivateKeeperV2/internal/proto/binary_data";
 
 message PostBinaryDataRequest {
-  bytes data = 1;
-  string name = 2;
-  string extension = 3;
-  string metadata = 4;
+    bytes data = 1;
+    string name = 2;
+    string extension = 3;
+    string metadata = 4;
 }
 
 message PostBinaryDataResponse {
-  string id = 1;
-  string name = 2;
-  string extension = 3;
-  string metadata = 4;
-  string created_at = 5;
-  string updated_at = 6;
+    string id = 1;
+    string name = 2;
+    string extension = 3;
+    string metadata = 4;
+    string created_at = 5;
 }
 
 message GetBinaryDataRequest {
-  string name = 1;
-  string metadata = 2;
+    string id = 1;
 }
 
 message BinaryData {
-  string id = 1;
-  string owner_id = 2;
-  bytes data = 3;
-  string name = 4;
-  string extension = 5;
-  string metadata = 6;
-  string created_at = 7;
-  string updated_at = 8;
+    string id = 1;
+    string owner_id = 2;
+    bytes data = 3;
+    string name = 4;
+    string extension = 5;
+    string metadata = 6;
+    string created_at = 7;
 }
 
 message GetBinaryDataResponse {
-  repeated BinaryData binaries = 1;
+    BinaryData binary_data = 1;
 }
 
+message GetAllBinaryInfoRequest {
+}
+
+message BinaryInfo {
+    string id = 1;
+    string data_type =2;
+    string metadata = 3;
+    string created_at = 4;
+}
+
+message GetAllBinaryInfoResponse {
+    repeated BinaryInfo binaries = 1;
+}
+
+
 service BinaryDataService {
-  rpc PostSaveBinaryData(PostBinaryDataRequest) returns (PostBinaryDataResponse);
-  rpc GetLoadBinaryData(GetBinaryDataRequest) returns (GetBinaryDataResponse);
+    rpc PostSaveBinaryData (PostBinaryDataRequest) returns (PostBinaryDataResponse);
+    rpc GetLoadBinaryData (GetBinaryDataRequest) returns (GetBinaryDataResponse);
+    rpc GetLoadAllBinaryDataInfo (GetAllBinaryInfoRequest) returns (GetAllBinaryInfoResponse);
 }

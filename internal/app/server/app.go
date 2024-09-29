@@ -47,6 +47,18 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/pkg/jwtmanager"
 )
 
+// Run initializes and starts the gRPC server for the application.
+//
+// This function performs the following steps:
+// - Loads the configuration for the server.
+// - Configures logging for the server to a log file.
+// - Initializes Redis for caching, cryptographic services for encryption, and Postgres for database operations.
+// - Sets up JWT authentication for securing API requests.
+// - Initializes various service components including user, credit card, text data, credentials, and binary data services.
+// - Creates validators for input data for each service.
+// - Configures and starts the gRPC server with TLS encryption and authentication middleware.
+// - Registers the gRPC services (user, credit card, text data, credentials, binary data) with the server.
+// - Sets up a TCP listener and serves the gRPC server, blocking until an error occurs or the server shuts down.
 func Run() {
 
 	cfg, err := config.New()
@@ -54,7 +66,7 @@ func Run() {
 		log.Println("Failed to initialize config", err.Error())
 		os.Exit(1)
 	}
-	logFileName := "keeperClient.log"
+	logFileName := "keeperServer.log"
 	logcfg.RunLoggerConfig(cfg.EnvLogLevel, logFileName)
 
 	redis, err := cache.NewRedis(cfg.RedisURL, cfg.RedisPassword, cfg.RedisDB, cfg.RedisTimeoutSec)
@@ -140,6 +152,9 @@ func Run() {
 	}
 }
 
+// initPostgresPool initializes a connection to the PostgreSQL database using the provided URI.
+// It also applies any pending database migrations. If the connection or migrations fail,
+// an error is returned.
 func initPostgresPool(databaseURI string) (*postgresql.PostgresPool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()

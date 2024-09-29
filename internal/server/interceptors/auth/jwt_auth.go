@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 	"github.com/sirupsen/logrus"
 	"log/slog"
 
@@ -13,28 +14,34 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/pkg/jwtmanager"
 )
 
+// Define a map of methods that require authentication authMandatoryMethods.
 var authMandatoryMethods = map[string]struct{}{
-	"/proto.CreditCardService/PostSaveCreditCard":   {},
-	"/proto.CreditCardService/GetLoadCreditCard":    {},
-	"/proto.TextDataService/PostSaveTextData":       {},
-	"/proto.TextDataService/GetLoadTextData":        {},
-	"/proto.BinaryDataService/PostSaveBinaryData":   {},
-	"/proto.BinaryDataService/GetLoadBinaryData":    {},
-	"/proto.CredentialsService/PostSaveCredentials": {},
-	"/proto.CredentialsService/GetLoadCredentials":  {},
+	"/proto.CreditCardService/PostSaveCreditCard":             {},
+	"/proto.CreditCardService/GetLoadCreditCard":              {},
+	"/proto.CreditCardService/GetLoadAllCreditCardDataInfo":   {},
+	"/proto.TextDataService/PostSaveTextData":                 {},
+	"/proto.TextDataService/GetLoadTextData":                  {},
+	"/proto.TextDataService/GetLoadAllTextDataInfo":           {},
+	"/proto.BinaryDataService/PostSaveBinaryData":             {},
+	"/proto.BinaryDataService/GetLoadBinaryData":              {},
+	"/proto.BinaryDataService/GetLoadAllBinaryDataInfo":       {},
+	"/proto.CredentialsService/PostSaveCredentials":           {},
+	"/proto.CredentialsService/GetLoadCredentials":            {},
+	"/proto.CredentialsService/GetLoadAllCredentialsDataInfo": {},
 }
 
-type UserIDContextKey string
-
+// JWTAuth struct holds the JWT manager for authentication.
 type JWTAuth struct {
-	jwtManager *jwtmanager.JWTManager
+	jwtManager *jwtmanager.JWTManager // Instance of JWTManager for token handling
 }
 
+// New creates a new instance of JWTAuth with the provided JWT manager.
 func New(jwtManager *jwtmanager.JWTManager) *JWTAuth {
 	return &JWTAuth{jwtManager: jwtManager}
 }
 
-// GRPCJWTAuth checks token from gRPC metadata and sets userID in the context. otherwise returns 401.
+// GRPCJWTAuth checks token from gRPC metadata and sets userID in the context.
+// If authentication fails, it returns an error with the corresponding status code.
 func (j *JWTAuth) GRPCJWTAuth(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	if _, ok := authMandatoryMethods[info.FullMethod]; !ok {
 		return handler(ctx, req)
@@ -57,7 +64,7 @@ func (j *JWTAuth) GRPCJWTAuth(ctx context.Context, req interface{}, info *grpc.U
 		logrus.Info("Authentication failed: unable to get userID from token", slog.String("error", err.Error()))
 		return nil, status.Errorf(codes.Unauthenticated, "authentification by UserID failed")
 	}
-
-	ctx = context.WithValue(ctx, UserIDContextKey("userID"), userID)
+	logrus.Info("Authentication succeeded UserId is: ", userID)
+	ctx = context.WithValue(ctx, model.UserIDKey, userID)
 	return handler(ctx, req)
 }

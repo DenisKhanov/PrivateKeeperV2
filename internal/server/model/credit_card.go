@@ -8,7 +8,7 @@ type CreditCardPostRequest struct {
 	ExpiresAt string `validate:"expires_at"`
 	CVV       string `validate:"cvv"`
 	PinCode   string `validate:"pin"`
-	MetaData  string
+	MetaData  string `validate:"meta_data"`
 }
 
 type CreditCard struct {

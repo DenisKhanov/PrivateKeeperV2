@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// UnpackGRPCError unpacks a gRPC error and prints user-friendly messages based on the error details.
+// It handles specific error cases, particularly for InvalidArgument errors.
 func UnpackGRPCError(err error) {
 	red := color.New(color.FgRed).SprintFunc()
 

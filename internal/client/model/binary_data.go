@@ -15,6 +15,5 @@ type BinaryData struct {
 }
 
 type BinaryDataLoadRequest struct {
-	Name     string
-	MetaData string
+	ID string
 }

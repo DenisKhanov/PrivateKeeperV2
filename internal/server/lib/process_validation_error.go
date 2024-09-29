@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ProcessValidationError processes validation errors and returns a structured error.
 func ProcessValidationError(msg string, report map[string]string) error {
 	st := status.New(codes.InvalidArgument, msg)
 	details := make([]*errdetails.BadRequest_FieldViolation, 0, len(report))

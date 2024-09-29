@@ -9,15 +9,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// JWTManager struct holds configuration for managing JWT tokens
 type JWTManager struct {
-	TokenName string
-	secretKey string
-	tokenExp  time.Duration
+	TokenName string        // The name of the token
+	secretKey string        // The secret key used for signing the token
+	tokenExp  time.Duration // Duration before the token expires
 }
 
+// claims struct represents the claims stored in the JWT
 type claims struct {
-	jwt.RegisteredClaims
-	UserID string
+	jwt.RegisteredClaims        // Embedding RegisteredClaims from the jwt package
+	UserID               string // Custom field to store the UserID
 }
 
 // New returns a new instance of JWTManager.
@@ -29,7 +31,7 @@ func New(tokenName string, secretKey string, hours int) *JWTManager {
 	}
 }
 
-// BuildJWTString creates JWT token with userID.
+// BuildJWTString creates a JWT token with the provided userID.
 func (j *JWTManager) BuildJWTString(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -46,7 +48,7 @@ func (j *JWTManager) BuildJWTString(userID string) (string, error) {
 	return tokenString, nil
 }
 
-// GetUserID returns userID from JWT token.
+// GetUserID returns the userID from the provided JWT token.
 func (j *JWTManager) GetUserID(tokenString string) (string, error) {
 	jwtClaims := &claims{}
 	token, err := jwt.ParseWithClaims(tokenString, jwtClaims,

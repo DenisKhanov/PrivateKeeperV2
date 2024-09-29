@@ -7,7 +7,7 @@ services:
     container_name: private-keeper-v2-app
     restart: always
     environment:
-      - DATABASE_URI=postgres://postgres:postgres@keeper-postgres:5432/postgres?sslmode=disable
+      - DATABASE_URI=postgres://postgres:postgres@postgres_db:5432/privatekeeper?sslmode=disable
       - GRPC_SERVER=:3300
       - REDIS_URL=redis:6379
       - REDIS_PASSWORD=
@@ -41,10 +41,10 @@ services:
   # PostgreSQL database
   postgres_db:
     image: postgres:16-alpine3.20
-    container_name: keeper-postgres
+    container_name: private-keeper-v2-postgres
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d privatekeeper" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,7 +56,6 @@ services:
     ports:
       - "5436:5432"
     volumes:
-      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - pg_data:/var/lib/postgresql/data
 
 volumes:

@@ -8,16 +8,19 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// BinaryDataPBClient is a client wrapper for interacting with the BinaryDataService.
 type BinaryDataPBClient struct {
 	binaryDataService pb.BinaryDataServiceClient
 }
 
+// NewBinaryDataPBClient creates a new BinaryDataPBClient with the given BinaryDataServiceClient.
 func NewBinaryDataPBClient(u pb.BinaryDataServiceClient) *BinaryDataPBClient {
 	return &BinaryDataPBClient{
 		binaryDataService: u,
 	}
 }
 
+// SaveBinaryData sends a request to save binary data and returns the saved data or an error.
 func (u *BinaryDataPBClient) SaveBinaryData(ctx context.Context, token string, bData model.BinaryDataPostRequest) (model.BinaryData, error) {
 	req := &pb.PostBinaryDataRequest{
 		Data:      bData.Data,
@@ -43,10 +46,35 @@ func (u *BinaryDataPBClient) SaveBinaryData(ctx context.Context, token string, b
 	return binaryData, nil
 }
 
-func (u *BinaryDataPBClient) LoadBinaryData(ctx context.Context, token string, bData model.BinaryDataLoadRequest) ([]model.BinaryData, error) {
+// LoadAllBinaryDataInfo retrieves all binary data info and returns a list of DataInfo or an error.
+func (u *BinaryDataPBClient) LoadAllBinaryDataInfo(ctx context.Context, token string) ([]model.DataInfo, error) {
+	req := &pb.GetAllBinaryInfoRequest{}
+
+	md := metadata.New(map[string]string{"token": token})
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	resp, err := u.binaryDataService.GetLoadAllBinaryDataInfo(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("load binary data: %w", err)
+	}
+
+	binaries := make([]model.DataInfo, 0, len(resp.Binaries))
+	for _, data := range resp.Binaries {
+		binaries = append(binaries, model.DataInfo{
+			ID:        data.Id,
+			DataType:  data.DataType,
+			MetaData:  data.Metadata,
+			CreatedAt: data.CreatedAt,
+		})
+	}
+
+	return binaries, nil
+}
+
+// LoadBinaryData retrieves binary data by ID and returns the BinaryData or an error.
+func (u *BinaryDataPBClient) LoadBinaryData(ctx context.Context, token string, dataID string) (model.BinaryData, error) {
 	req := &pb.GetBinaryDataRequest{
-		Name:     bData.Name,
-		Metadata: bData.MetaData,
+		Id: dataID,
 	}
 
 	md := metadata.New(map[string]string{"token": token})
@@ -54,18 +82,15 @@ func (u *BinaryDataPBClient) LoadBinaryData(ctx context.Context, token string, b
 
 	resp, err := u.binaryDataService.GetLoadBinaryData(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("load binary data: %w", err)
+		return model.BinaryData{}, fmt.Errorf("load binary data: %w", err)
+	}
+	data := resp.BinaryData
+	binaryData := model.BinaryData{
+		Name:      data.Name,
+		Extension: data.Extension,
+		Data:      data.Data,
+		MetaData:  data.Metadata,
 	}
 
-	binaries := make([]model.BinaryData, 0, len(resp.Binaries))
-	for _, data := range resp.Binaries {
-		binaries = append(binaries, model.BinaryData{
-			Name:      data.Name,
-			Extension: data.Extension,
-			Data:      data.Data,
-			MetaData:  data.Metadata,
-		})
-	}
-
-	return binaries, nil
+	return binaryData, nil
 }

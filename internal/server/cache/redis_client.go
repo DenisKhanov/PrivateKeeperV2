@@ -10,11 +10,14 @@ import (
 	rd "github.com/redis/go-redis/v9"
 )
 
+// Redis represents a Redis client with a timeout setting.
 type Redis struct {
-	Client     *rd.Client
-	setTimeout time.Duration
+	Client     *rd.Client    // Redis client for executing commands
+	setTimeout time.Duration // Timeout for setting keys in Redis
 }
 
+// NewRedis initializes a new Redis client with the provided connection parameters.
+// It returns a pointer to the Redis instance and an error if the connection fails.
 func NewRedis(redisURL, password string, db, setTimeout int) (*Redis, error) {
 	client := rd.NewClient(&rd.Options{
 		Addr:     redisURL,
@@ -38,6 +41,8 @@ func NewRedis(redisURL, password string, db, setTimeout int) (*Redis, error) {
 	}, nil
 }
 
+// HSetWithTTL sets a hash value in Redis with a specified TTL (time-to-live).
+// It takes a key, the data to be stored, and the TTL duration.
 func (r *Redis) HSetWithTTL(key string, data any, ttl time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()

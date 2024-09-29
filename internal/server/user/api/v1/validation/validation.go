@@ -6,14 +6,17 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// Validator struct encapsulates a validator instance
 type Validator struct {
-	validator *validator.Validate
+	validator *validator.Validate // Validator instance to perform validation
 }
 
+// New initializes a new Validator instance
 func New(validator *validator.Validate) *Validator {
 	return &Validator{validator: validator}
 }
 
+// ValidateLoginRequest validates the login request structure
 func (v *Validator) ValidateLoginRequest(req *model.UserLoginRequest) (map[string]string, bool) {
 	err := v.validator.Struct(req)
 	report := make(map[string]string)
@@ -35,6 +38,7 @@ func (v *Validator) ValidateLoginRequest(req *model.UserLoginRequest) (map[strin
 	return nil, true
 }
 
+// ValidateRegisterRequest validates the registration request structure
 func (v *Validator) ValidateRegisterRequest(req *model.UserRegisterRequest) (map[string]string, bool) {
 	err := v.validator.Struct(req)
 	report := make(map[string]string)

@@ -13,22 +13,26 @@ import (
 	"github.com/DenisKhanov/PrivateKeeperV2/internal/server/model"
 )
 
+// UserService interface defines methods for user-related operations
 type UserService interface {
 	Register(ctx context.Context, user model.UserRegisterRequest) (string, error)
 	Login(ctx context.Context, user model.UserLoginRequest) (string, error)
 }
 
+// Validator interface defines methods for validating user requests
 type Validator interface {
 	ValidateLoginRequest(req *model.UserLoginRequest) (map[string]string, bool)
 	ValidateRegisterRequest(req *model.UserRegisterRequest) (map[string]string, bool)
 }
 
+// UserHandler handles user-related gRPC requests
 type UserHandler struct {
-	userService UserService
-	pb.UnimplementedUserServiceServer
-	validator Validator
+	userService                       UserService // The user service for handling business logic
+	pb.UnimplementedUserServiceServer             // Embed the unimplemented server to handle gRPC requests
+	validator                         Validator   // The validator for validating user input
 }
 
+// New initializes a new UserHandler instance
 func New(userService UserService, validator Validator) *UserHandler {
 	return &UserHandler{
 		userService: userService,
@@ -36,6 +40,7 @@ func New(userService UserService, validator Validator) *UserHandler {
 	}
 }
 
+// PostRegisterUser handles user registration via gRPC
 func (h *UserHandler) PostRegisterUser(ctx context.Context, in *pb.PostUserRegisterRequest) (*pb.PostUserRegisterResponse, error) {
 	req := model.UserRegisterRequest{
 		Login:    in.Login,
@@ -67,6 +72,7 @@ func (h *UserHandler) PostRegisterUser(ctx context.Context, in *pb.PostUserRegis
 	return &pb.PostUserRegisterResponse{Token: token}, nil
 }
 
+// PostLoginUser handles user login via gRPC
 func (h *UserHandler) PostLoginUser(ctx context.Context, in *pb.PostUserLoginRequest) (*pb.PostUserLoginResponse, error) {
 	req := model.UserLoginRequest{
 		Login:    in.Login,

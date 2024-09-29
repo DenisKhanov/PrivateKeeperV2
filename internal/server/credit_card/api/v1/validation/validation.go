@@ -11,12 +11,14 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const expiresAtLayout = "02-01-2006"
+const expiresAtLayout = "02-01-2006" // Define the layout for the expiration date format
 
+// Validator is a struct that holds the validator instance.
 type Validator struct {
-	validator *validator.Validate
+	validator *validator.Validate // Instance of the validator
 }
 
+// New creates a new Validator and registers custom validation rules.
 func New(validator *validator.Validate) (*Validator, error) {
 	v := &Validator{validator: validator}
 
@@ -48,11 +50,13 @@ func New(validator *validator.Validate) (*Validator, error) {
 	return v, nil
 }
 
+// expiresAt checks if the expiration date is in the correct format (DD-MM-YYYY).
 func expiresAt(fl validator.FieldLevel) bool {
 	_, err := time.Parse(expiresAtLayout, fl.Field().String())
 	return err == nil
 }
 
+// cardNumber validates the card number format (four groups of four digits).
 func cardNumber(fl validator.FieldLevel) bool {
 	blocks := strings.Split(fl.Field().String(), " ")
 	if len(blocks) != 4 {
@@ -72,6 +76,7 @@ func cardNumber(fl validator.FieldLevel) bool {
 	return true
 }
 
+// cvvCode validates the CVV code (must be three digits).
 func cvvCode(fl validator.FieldLevel) bool {
 	if len(fl.Field().String()) != 3 {
 		return false
@@ -84,6 +89,7 @@ func cvvCode(fl validator.FieldLevel) bool {
 	return true
 }
 
+// pinCode validates the PIN code (must be four digits).
 func pinCode(fl validator.FieldLevel) bool {
 	if len(fl.Field().String()) != 4 {
 		return false
@@ -96,10 +102,12 @@ func pinCode(fl validator.FieldLevel) bool {
 	return true
 }
 
+// owner validates the owner's name (must consist of two words).
 func owner(fl validator.FieldLevel) bool {
 	return len(strings.Split(fl.Field().String(), " ")) == 2
 }
 
+// ValidatePostRequest validates the incoming CreditCardPostRequest.
 func (v *Validator) ValidatePostRequest(req *model.CreditCardPostRequest) (map[string]string, bool) {
 	err := v.validator.Struct(req)
 	report := make(map[string]string)
